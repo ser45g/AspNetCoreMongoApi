@@ -1,0 +1,68 @@
+services:
+  aspnetcoremongoapi:
+    image: ${DOCKER_REGISTRY-}aspnetcoremongoapi
+    ports:
+      - 8081:8081
+    build:
+      context: .
+      dockerfile: AspNetCoreMongoApi/Dockerfile
+    environment:
+       - "ConnectionStrings__MongoDb=mongodb://root:pwd@mongo:27017/db?authMechanism=SCRAM-SHA-1&authSource=admin"
+       - "OTEL_EXPORTER_OTLP_ENDPOINT=http://seq-dashboard:5341/ingest/otlp/v1/traces"
+       - "OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf"
+       - "OTEL_EXPORTER_OTLP_HEADERS=X-Seq-ApiKey=abcde12345"
+       #- "OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger-dashboard:4317"
+       #- "OTEL_EXPORTER_OTLP_ENDPOINT=http://app-dashboard:18889"
+  mongo:
+    image: mongo
+    restart: always
+    ports:
+      - 27017:27017
+    volumes:
+      - mongo-data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: db
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: pwd
+
+  mongo-express:
+    image: mongo-express
+    restart: always
+    volumes:
+      - mongo-express-data:/data/db
+    ports:
+      - 8082:8081
+    environment:
+      ME_CONFIG_MONGODB_URL: mongodb://root:pwd@mongo:27017/
+      ME_CONFIG_BASICAUTH_ENABLED: true
+      ME_CONFIG_BASICAUTH_USERNAME: root
+      ME_CONFIG_BASICAUTH_PASSWORD: pwd
+  # app-dashboard:
+  #   image: mcr.microsoft.com/dotnet/aspire-dashboard:latest
+  #   ports:
+  #     - 18888:18888
+
+  # jaeger-dashboard:
+  #   image: jaegertracing/all-in-one
+  #   ports:
+  #     - 4317:4317
+  #     - 4318:4318
+  #     - 16686:16686
+
+  seq-dashboard:
+    image: datalust/seq:2024.3
+    environment:
+      - ACCEPT_EULA=Y
+      - SEQ_FIRSTRUN_ADMINPASSWORDHASH=pwd
+    ports:
+      - 5341:5341
+      - 8083:80
+volumes:
+    
+  mongo-data:
+    driver: local  
+  mongo-express-data:
+    driver: local  
+networks:
+  otel:
+   

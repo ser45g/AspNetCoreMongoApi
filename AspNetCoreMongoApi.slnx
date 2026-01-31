@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="AspNetCoreMongoApi/AspNetCoreMongoApi.csproj" />
+  <Project Path="docker-compose.dcproj">
+    <Build />
+  </Project>
+</Solution>
