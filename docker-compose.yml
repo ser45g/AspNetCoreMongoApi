@@ -8,11 +8,8 @@ services:
       dockerfile: AspNetCoreMongoApi/Dockerfile
     environment:
        - "ConnectionStrings__MongoDb=mongodb://root:pwd@mongo:27017/db?authMechanism=SCRAM-SHA-1&authSource=admin"
-       - "OTEL_EXPORTER_OTLP_ENDPOINT=http://app-dashboard:18889"
-       #- "OTEL_EXPORTER_OTLP_ENDPOINT=http://seq-dashboard:5341/ingest/otlp/v1/traces"
-       #- "OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf"
-       #- "OTEL_EXPORTER_OTLP_HEADERS=X-Seq-ApiKey=abcde12345"
-       #- "OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger-dashboard:4317"
+       - "OTEL_EXPORTER_OTLP_ENDPOINT=http://my-apm:8200"
+     
   mongo:
     image: mongo
     restart: always
@@ -37,28 +34,45 @@ services:
       ME_CONFIG_BASICAUTH_ENABLED: true
       ME_CONFIG_BASICAUTH_USERNAME: root
       ME_CONFIG_BASICAUTH_PASSWORD: pwd
-  app-dashboard:
-    image: mcr.microsoft.com/dotnet/aspire-dashboard:latest
+
+  my-kibana:
+    image: kibana:9.0.2
+    volumes:
+      - ./kibana.yml:/usr/share/kibana/config/kibana.yml
     ports:
-      - 18888:18888
+      - 5601:5601
+    depends_on:
+      - my-elasticsearch
 
-  # jaeger-dashboard:
-  #   image: jaegertracing/all-in-one
-  #   ports:
-  #     - 4317:4317
-  #     - 4318:4318
-  #     - 16686:16686
-
-  #eq-dashboard:
-  # image: datalust/seq:2024.3
-  # environment:
-  #   - ACCEPT_EULA=Y
-  #   - SEQ_FIRSTRUN_ADMINPASSWORDHASH=pwd
-  # ports:
-  #   - 5341:5341
-  #   - 8083:80
+  my-elasticsearch:
+    image: elasticsearch:9.0.2
+    environment:
+      ES_JAVA_OPTS: -Xms2g -Xmx2g 
+      cluster.name: "docker-cluster"
+      network.host: 0.0.0.0
+      discovery.type: single-node
+      node.name: my-elasticsearch
+      xpack.security.enabled: false
+      xpack.security.audit.enabled: false
+    ports:
+      - 9200:9200
+  my-apm:
+    image: elastic/apm-server:9.0.2
+    volumes:
+      - ./apm-server.yml:/usr/share/apm-server/apm-server.yml
+    ports:
+      - "8200:8200"
+    depends_on:
+      - my-elasticsearch
+  my-logstash:
+    image: logstash:9.0.2
+    volumes:
+      - ./logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+    ports:
+      - 5044:5044
+    depends_on:
+      - my-elasticsearch
 volumes:
-    
   mongo-data:
     driver: local  
   mongo-express-data:

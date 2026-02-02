@@ -3,7 +3,9 @@ using AspNetCoreMongoApi.Modules;
 using AspNetCoreMongoApi.Profiles;
 using Carter;
 using Carter.ResponseNegotiators.Newtonsoft;
+using Elastic.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
+using OpenTelemetry;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
@@ -26,24 +28,16 @@ builder.Services.AddDbContext<MongoDbContext>(options =>
 });
 builder.Services.AddAutoMapper(typeof(AppMappingProfile));
 
-builder.Services.AddLogging();
 
-builder.Services.AddOpenTelemetry().ConfigureResource(resource =>
-{
-    resource.AddService("WeatherForecast");
-}).WithMetrics(metrics =>
-{
-    metrics.AddAspNetCoreInstrumentation().AddHttpClientInstrumentation();
 
-    metrics.AddOtlpExporter();
-}).WithTracing(tracing =>
-{
-    tracing.AddAspNetCoreInstrumentation().AddHttpClientInstrumentation().AddEntityFrameworkCoreInstrumentation();
+builder.Logging.AddElasticsearch();
 
-    tracing.AddOtlpExporter();
-});
-
-builder.Logging.AddOpenTelemetry(logging => logging.AddOtlpExporter());
+builder.Services
+    .AddOpenTelemetry()
+    .WithTracing(opt =>
+        opt.AddOtlpExporter().WithElasticDefaults().AddAspNetCoreInstrumentation().AddHttpClientInstrumentation()
+    ).WithLogging(opt =>
+        opt.AddOtlpExporter().WithElasticDefaults()).WithMetrics(opt => opt.AddOtlpExporter().WithElasticDefaults());
 
 
 builder.Services.AddCarter(configurator: (config) =>
