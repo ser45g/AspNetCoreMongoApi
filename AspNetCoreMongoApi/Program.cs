@@ -35,7 +35,7 @@ builder.Services.AddOpenTelemetry().ConfigureResource(resource =>
 {
     metrics.AddAspNetCoreInstrumentation().AddHttpClientInstrumentation();
 
-    metrics.AddOtlpExporter();
+    metrics.AddPrometheusExporter();
 }).WithTracing(tracing =>
 {
     tracing.AddAspNetCoreInstrumentation().AddHttpClientInstrumentation().AddEntityFrameworkCoreInstrumentation();
@@ -62,6 +62,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseOpenTelemetryPrometheusScrapingEndpoint();
 app.MapCarter();
 
 using var scope = app.Services.CreateScope();

@@ -8,11 +8,7 @@ services:
       dockerfile: AspNetCoreMongoApi/Dockerfile
     environment:
        - "ConnectionStrings__MongoDb=mongodb://root:pwd@mongo:27017/db?authMechanism=SCRAM-SHA-1&authSource=admin"
-       - "OTEL_EXPORTER_OTLP_ENDPOINT=http://seq-dashboard:5341/ingest/otlp/v1/traces"
-       - "OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf"
-       - "OTEL_EXPORTER_OTLP_HEADERS=X-Seq-ApiKey=abcde12345"
-       #- "OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger-dashboard:4317"
-       #- "OTEL_EXPORTER_OTLP_ENDPOINT=http://app-dashboard:18889"
+       - "OTEL_EXPORTER_OTLP_ENDPOINT=http://prometheus:9090"
   mongo:
     image: mongo
     restart: always
@@ -37,32 +33,88 @@ services:
       ME_CONFIG_BASICAUTH_ENABLED: true
       ME_CONFIG_BASICAUTH_USERNAME: root
       ME_CONFIG_BASICAUTH_PASSWORD: pwd
-  # app-dashboard:
-  #   image: mcr.microsoft.com/dotnet/aspire-dashboard:latest
-  #   ports:
-  #     - 18888:18888
+  
 
-  # jaeger-dashboard:
-  #   image: jaegertracing/all-in-one
-  #   ports:
-  #     - 4317:4317
-  #     - 4318:4318
-  #     - 16686:16686
 
-  seq-dashboard:
-    image: datalust/seq
-    volumes:
-      - seq-data:/data
-    environment:
-      - ACCEPT_EULA=Y
-      - SEQ_PASSWORD=pwd
-      - SEQ_FIRSTRUN_ADMINPASSWORDHASH=pwd
-      - SEQ_API_CANONICALURI=https://seq.example.com
+  promtail:
+    image: grafana/promtail:latest
+    container_name: promtail
     ports:
-      - 5341:5341
-      - 8083:80
+      - "9080:9080"
+    volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./promtail-config.yaml:/etc/promtail/config.yml
+    command: -config.file=/etc/promtail/config.yml
+    privileged: true
+
+  loki:
+    image: grafana/loki:latest
+    container_name: loki
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./loki-config.yaml:/etc/loki/local-config.yaml
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - ./grafana/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
+      - grafana-data:/var/lib/grafana
+
+
+
+  # prometheus:
+  #   image: prom/prometheus
+  #   volumes:
+  #     - ./prometheus.yml:/etc/prometheus/prometheus.yml
+  #   ports:
+  #     - "9090:9090"
+
+  # grafana:
+  #   image: grafana/grafana
+  #   ports:
+  #     - "3000:3000"
+  #   depends_on:
+  #     - prometheus
+
+  # loki:
+  #   image: grafana/loki:2.9.0
+  #   ports:
+  #     - "3100:3100"
+  #   command: -config.file=/etc/loki/local-config.yaml
+
+  # promtail:
+  #   image: grafana/promtail:2.9.0
+  #   volumes:
+  #     - promtail-data:/var/log
+  #     - ./promtail-config.yaml:/etc/promtail/config.yaml
+  #   command: -config.file=/etc/promtail/config.yaml
+  #   depends_on:
+  #     - loki
+  
 volumes:
-    
+  prometheus-data:
+    driver: local
+  grafana-data:
+    driver: local
+  promtail-data:
+    driver: local
   mongo-data:
     driver: local  
   mongo-express-data:

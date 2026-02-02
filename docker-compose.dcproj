@@ -11,5 +11,10 @@
     </None>
     <None Include="docker-compose.yml" />
     <None Include=".dockerignore" />
+    <None Include="grafana\datasources.yaml" />
+    <None Include="grafana\example-dashboard.json" />
+    <None Include="loki-config.yaml" />
+    <None Include="prometheus.yml" />
+    <None Include="promtail-config.yaml" />
   </ItemGroup>
 </Project>
