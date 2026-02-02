@@ -20,8 +20,7 @@ namespace AspNetCoreMongoApi.Modules
             {
                 var weatherForecasts = await context.WeatherForecasts.ToListAsync();
 
-                var response = mapper.Map<IEnumerable<WeatherForecastDto>>(weatherForecasts);
-                Console.WriteLine("Hello");
+                var response = mapper.Map<IEnumerable<WeatherForecastDto>>(weatherForecasts);               
 
                 return Results.Ok(response);
             }).WithName("GetWeatherForecasts");
