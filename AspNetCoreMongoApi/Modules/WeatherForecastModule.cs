@@ -22,7 +22,7 @@ namespace AspNetCoreMongoApi.Modules
 
                 var response = mapper.Map<IEnumerable<WeatherForecastDto>>(weatherForecasts);
 
-                logger.LogWarning("warn");
+            
                 return Results.Ok(response);
             }).WithName("GetWeatherForecasts");
          
@@ -30,7 +30,7 @@ namespace AspNetCoreMongoApi.Modules
             group.MapGet("{id:guid}", async (Guid id, [FromServices] IMapper mapper, [FromServices] MongoDbContext context, [FromServices] ILogger<WeatherForecastModule> logger) =>
             {
                 var weatherForecast = await context.WeatherForecasts.FirstOrDefaultAsync(w => w.Id == id);
-                logger.LogInformation("Hello");
+              
 
                 if (weatherForecast == null) {
                     return Results.NotFound<Guid>(id);

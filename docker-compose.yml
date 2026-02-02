@@ -10,9 +10,7 @@ services:
        - "ConnectionStrings__MongoDb=mongodb://root:pwd@mongo:27017/db?authMechanism=SCRAM-SHA-1&authSource=admin"
        - "OTEL_EXPORTER_OTLP_ENDPOINT=http://seq-dashboard:5341/ingest/otlp/v1/traces"
        - "OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf"
-       - "OTEL_EXPORTER_OTLP_HEADERS=X-Seq-ApiKey=abcde12345"
-       #- "OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger-dashboard:4317"
-       #- "OTEL_EXPORTER_OTLP_ENDPOINT=http://app-dashboard:18889"
+       - "OTEL_EXPORTER_OTLP_HEADERS=X-Seq-ApiKey=abcde12345"      
   mongo:
     image: mongo
     restart: always
@@ -37,18 +35,6 @@ services:
       ME_CONFIG_BASICAUTH_ENABLED: true
       ME_CONFIG_BASICAUTH_USERNAME: root
       ME_CONFIG_BASICAUTH_PASSWORD: pwd
-  # app-dashboard:
-  #   image: mcr.microsoft.com/dotnet/aspire-dashboard:latest
-  #   ports:
-  #     - 18888:18888
-
-  # jaeger-dashboard:
-  #   image: jaegertracing/all-in-one
-  #   ports:
-  #     - 4317:4317
-  #     - 4318:4318
-  #     - 16686:16686
-
   seq-dashboard:
     image: datalust/seq
     volumes:
