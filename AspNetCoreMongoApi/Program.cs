@@ -1,15 +1,12 @@
 using AspNetCoreMongoApi.Data;
-using AspNetCoreMongoApi.Modules;
 using AspNetCoreMongoApi.Profiles;
-using Carter;
-using Carter.ResponseNegotiators.Newtonsoft;
+using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Scalar.AspNetCore;
-using System.Net.Sockets;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,11 +43,7 @@ builder.Services.AddOpenTelemetry().ConfigureResource(resource =>
 builder.Logging.AddOpenTelemetry(logging => logging.AddOtlpExporter());
 
 
-builder.Services.AddCarter(configurator: (config) =>
-{
-    config.WithResponseNegotiator<NewtonsoftJsonResponseNegotiator>();
-    config.WithModule<WeatherForecastModule>();
-});
+builder.Services.AddFastEndpoints();
 
 var app = builder.Build();
 
@@ -62,7 +55,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.MapCarter();
+app.MapFastEndpoints();
 
 using var scope = app.Services.CreateScope();
 
