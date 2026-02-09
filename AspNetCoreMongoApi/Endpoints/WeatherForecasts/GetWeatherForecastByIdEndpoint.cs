@@ -7,17 +7,20 @@ using IMapper = AutoMapper.IMapper;
 
 namespace AspNetCoreMongoApi.Endpoints.WeatherForecasts
 {
-    public class GetWeatherForecastByIdEndpoint(IMapper _mapper, MongoDbContext _context):Endpoint<Guid, WeatherForecastDto>
+
+    public record GetWeatherForecastRequest(Guid id);
+    public class GetWeatherForecastByIdEndpoint(IMapper _mapper, MongoDbContext _context):Endpoint<GetWeatherForecastRequest, WeatherForecastDto>
     {
         public override void Configure()
         {
-            Get("weather-forecast/{id:guid}");
+            Get("/weather-forecast/{id:guid}");
+            
             AllowAnonymous();
         }
 
-        public override async Task HandleAsync( Guid req, CancellationToken ct)
+        public override async Task HandleAsync(GetWeatherForecastRequest req, CancellationToken ct)
         {
-            var weatherForecast = await _context.WeatherForecasts.FirstOrDefaultAsync(w => w.Id == req);
+            var weatherForecast = await _context.WeatherForecasts.FirstOrDefaultAsync(w => w.Id == req.id);
 
 
             if (weatherForecast == null)
