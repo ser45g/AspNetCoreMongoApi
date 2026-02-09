@@ -1,10 +1,11 @@
-﻿using AspNetCoreMongoApi.Data;
+﻿using AspNetCoreMongoApi.Contracts.Request;
+using AspNetCoreMongoApi.Data;
 using AspNetCoreMongoApi.Entities;
 using FastEndpoints;
 
 namespace AspNetCoreMongoApi.Endpoints.WeatherForecasts
 {
-    public class DeleteWeatherForecastEndpoint(MongoDbContext _context):Endpoint<Guid>
+    public class DeleteWeatherForecastEndpoint(MongoDbContext _context):Endpoint<WeatherForecastDeleteRequest>
     {
         public override void Configure()
         {
@@ -12,9 +13,9 @@ namespace AspNetCoreMongoApi.Endpoints.WeatherForecasts
             AllowAnonymous();
         }
 
-        public override async Task HandleAsync(Guid id, CancellationToken ct)
+        public override async Task HandleAsync(WeatherForecastDeleteRequest req, CancellationToken ct)
         {
-            _context.WeatherForecasts.Remove(new WeatherForecast() { Id = id });
+            _context.WeatherForecasts.Remove(new WeatherForecast() { Id = req.Id });
 
             await _context.SaveChangesAsync();
 

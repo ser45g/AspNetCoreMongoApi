@@ -24,6 +24,13 @@ builder.Services.AddDbContext<MongoDbContext>(options =>
 });
 builder.Services.AddAutoMapper(typeof(AppMappingProfile));
 
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.AllowAnyMethod().AllowAnyHeader().WithOrigins();
+    });
+});
 builder.Services.AddLogging();
 
 builder.Services.AddOpenTelemetry().ConfigureResource(resource =>
@@ -58,6 +65,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseCors();
 app.MapFastEndpoints();
 
 app.UseExceptionHandler();

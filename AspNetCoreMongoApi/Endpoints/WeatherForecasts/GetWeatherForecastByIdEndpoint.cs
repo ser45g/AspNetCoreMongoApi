@@ -1,4 +1,5 @@
-﻿using AspNetCoreMongoApi.Contracts;
+﻿using AspNetCoreMongoApi.Contracts.Request;
+using AspNetCoreMongoApi.Contracts.Response;
 using AspNetCoreMongoApi.Data;
 using AutoMapper;
 using FastEndpoints;
@@ -7,9 +8,7 @@ using IMapper = AutoMapper.IMapper;
 
 namespace AspNetCoreMongoApi.Endpoints.WeatherForecasts
 {
-
-    public record GetWeatherForecastRequest(Guid id);
-    public class GetWeatherForecastByIdEndpoint(IMapper _mapper, MongoDbContext _context):Endpoint<GetWeatherForecastRequest, WeatherForecastDto>
+    public class GetWeatherForecastByIdEndpoint(IMapper _mapper, MongoDbContext _context):Endpoint<WeatherForecastGetByIdRequest, WeatherForecastDto>
     {
         public override void Configure()
         {
@@ -18,9 +17,9 @@ namespace AspNetCoreMongoApi.Endpoints.WeatherForecasts
             AllowAnonymous();
         }
 
-        public override async Task HandleAsync(GetWeatherForecastRequest req, CancellationToken ct)
+        public override async Task HandleAsync(WeatherForecastGetByIdRequest req, CancellationToken ct)
         {
-            var weatherForecast = await _context.WeatherForecasts.FirstOrDefaultAsync(w => w.Id == req.id);
+            var weatherForecast = await _context.WeatherForecasts.FirstOrDefaultAsync(w => w.Id == req.Id);
 
 
             if (weatherForecast == null)

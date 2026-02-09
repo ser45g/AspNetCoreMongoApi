@@ -1,4 +1,5 @@
-﻿using AspNetCoreMongoApi.Contracts;
+﻿using AspNetCoreMongoApi.Contracts.Request;
+using AspNetCoreMongoApi.Contracts.Response;
 using AspNetCoreMongoApi.Entities;
 using AutoMapper;
 
@@ -10,9 +11,9 @@ namespace AspNetCoreMongoApi.Profiles
         {
             CreateMap<WeatherForecast, WeatherForecastDto>();
 
-            CreateMap<WeatherForecastCreateDto, WeatherForecast>();
+            CreateMap<WeatherForecastCreateRequest, WeatherForecast>();
 
-            CreateMap<WeatherForecastUpdateDto, WeatherForecast>();
+            CreateMap<WeatherForecastUpdateRequest, WeatherForecast>();
         }
     }
 }

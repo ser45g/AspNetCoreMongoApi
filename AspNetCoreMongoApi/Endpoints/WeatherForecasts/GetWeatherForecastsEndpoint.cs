@@ -1,4 +1,4 @@
-﻿using AspNetCoreMongoApi.Contracts;
+﻿using AspNetCoreMongoApi.Contracts.Response;
 using AspNetCoreMongoApi.Data;
 using AutoMapper;
 using FastEndpoints;
@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AspNetCoreMongoApi.Endpoints.WeatherForecasts
 {
-    public class GetWeatherForecastsEndpoint(AutoMapper.IMapper _mapper, MongoDbContext _context):EndpointWithoutRequest<IEnumerable<WeatherForecastDto>>
+    public class GetWeatherForecastsEndpoint(AutoMapper.IMapper _mapper, MongoDbContext _context) : EndpointWithoutRequest<IEnumerable<WeatherForecastDto>>
     {
         public override void Configure()
         {
