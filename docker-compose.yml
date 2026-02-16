@@ -7,8 +7,10 @@ services:
       context: .
       dockerfile: AspNetCoreMongoApi/Dockerfile
     environment:
-       - "ConnectionStrings__MongoDb=mongodb://root:pwd@mongo:27017/db?authMechanism=SCRAM-SHA-1&authSource=admin"
-       - "OTEL_EXPORTER_OTLP_ENDPOINT=http://seq-dashboard:5341/ingest/otlp/v1/traces"
+       - "MongoDbOptions__Username=root"
+       - "MongoDbOptions__Password=pwd"
+       - "MongoDbOptions__Url=mongo:27017"
+       - "SeqOptions__Url=seq-dashboard:5341"
        - "OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf"
        - "OTEL_EXPORTER_OTLP_HEADERS=X-Seq-ApiKey=abcde12345"      
   mongo:

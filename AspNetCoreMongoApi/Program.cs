@@ -1,6 +1,8 @@
 using AspNetCoreMongoApi.Data;
 using AspNetCoreMongoApi.ErrorHandlers;
+using AspNetCoreMongoApi.Options;
 using AspNetCoreMongoApi.Profiles;
+using AspNetCoreMongoApi.Validators;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 using OpenTelemetry.Logs;
@@ -13,14 +15,35 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
 
-var mongoDbConnectionString = builder.Configuration.GetConnectionString("MongoDb");
+var mongoDbOptions = builder.Configuration.GetSection(MongoDbOptions.ConfigurationSection).Get<MongoDbOptions>();
+var seqOptions = builder.Configuration.GetSection(SeqOptions.ConfigurationSection).Get<SeqOptions>();
 
-if(mongoDbConnectionString == null)
-    throw new ArgumentNullException(nameof(mongoDbConnectionString));
+if (mongoDbOptions == null || seqOptions == null)
+    throw new ArgumentException("Configuration is incorrect");
 
-builder.Services.AddDbContext<MongoDbContext>(options =>
+var mongoDbOptionsValidator = new MongoDbOptionsValidator();
+var mongoDbOptionsValidationResult = mongoDbOptionsValidator.Validate(mongoDbOptions);
+
+if (!mongoDbOptionsValidationResult.IsValid)
 {
-    options.UseMongoDB(mongoDbConnectionString);
+    var errors = string.Join(", ", mongoDbOptionsValidationResult.Errors.Select(e => e.ErrorMessage));
+    throw new InvalidOperationException($"Configuration validation failed: {errors}");
+}
+
+var seqOptionsValidator = new SeqOptionsValidator();
+var seqOptionsValidationResult = seqOptionsValidator.Validate(seqOptions);
+
+if (!seqOptionsValidationResult.IsValid)
+{
+    var errors = string.Join(", ", seqOptionsValidationResult.Errors.Select(e => e.ErrorMessage));
+    throw new InvalidOperationException($"Configuration validation failed: {errors}");
+}
+
+builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"] = seqOptions.OtlpEndpoint;
+
+builder.Services.AddDbContext<MongoDbContext>((options) =>
+{
+    options.UseMongoDB(mongoDbOptions.ConnectionString);
 });
 builder.Services.AddAutoMapper(typeof(AppMappingProfile));
 
@@ -38,6 +61,7 @@ builder.Services.AddOpenTelemetry().ConfigureResource(resource =>
     resource.AddService("WeatherForecast");
 }).WithMetrics(metrics =>
 {
+
     metrics.AddAspNetCoreInstrumentation().AddHttpClientInstrumentation();
 
     metrics.AddOtlpExporter();

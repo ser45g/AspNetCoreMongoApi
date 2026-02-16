@@ -1,0 +1,4 @@
+firstRunAdminUsername: admin
+firstRunAdminPasswordSecret:
+  name: seq-secret
+  key: password

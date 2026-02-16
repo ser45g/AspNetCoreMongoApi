@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: weather-forecast
+spec:
+  selector:
+    matchLabels:
+      app: weather-forecast
+  template:
+    metadata:
+      labels:
+        app: weather-forecast
+    spec:
+      containers:
+      - name: weather-forecast
+        image: seralex915/weather-forecast-api
+        env:
+        - name: OTEL_EXPORTER_OTLP_HEADERS
+          value: X-Seq-ApiKey=abcde12345
+
+        - name: OTEL_EXPORTER_OTLP_PROTOCOL
+          value: http/protobuf
+
+        - name: SeqOptions__Url
+          valueFrom:
+            configMapKeyRef:
+              name: weather-forecast-configmap
+              key: seq-url
+
+        - name: MongoDbOptions__Url
+          valueFrom:
+            configMapKeyRef:
+              name: weather-forecast-configmap
+              key: mongodb-url
+
+        - name: MongoDbOptions__Username
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-secret
+              key: mongo-root-username
+        
+        - name: MongoDbOptions__Password
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-secret
+              key: mongo-root-password
+        resources:
+            limits:
+              cpu: '500m'
+              memory: 1024Mi
+            requests:
+              cpu: '300m'
+              memory: 768Mi
+        
+        ports:
+        - containerPort: 8080
