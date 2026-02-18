@@ -1,3 +1,5 @@
+image:
+  tag: 2025.2
 firstRunAdminUsername: admin
 firstRunAdminPasswordSecret:
   name: seq-secret

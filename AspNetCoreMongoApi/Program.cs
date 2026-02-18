@@ -10,6 +10,7 @@ using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Scalar.AspNetCore;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,7 +20,11 @@ var mongoDbOptions = builder.Configuration.GetSection(MongoDbOptions.Configurati
 var seqOptions = builder.Configuration.GetSection(SeqOptions.ConfigurationSection).Get<SeqOptions>();
 
 if (mongoDbOptions == null || seqOptions == null)
+{
+    Console.Write(JsonSerializer.Serialize<MongoDbOptions>(mongoDbOptions));
+    Console.WriteLine(JsonSerializer.Serialize<SeqOptions>(seqOptions));
     throw new ArgumentException("Configuration is incorrect");
+}
 
 var mongoDbOptionsValidator = new MongoDbOptionsValidator();
 var mongoDbOptionsValidationResult = mongoDbOptionsValidator.Validate(mongoDbOptions);

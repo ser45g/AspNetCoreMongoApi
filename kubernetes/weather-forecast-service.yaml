@@ -3,11 +3,11 @@ kind: Service
 metadata:
   name: weather-forecast-service
 spec:
-  type: LoadBalancer
+  type: NodePort
   selector:
-    app: weather-forecast-service
+    app: weather-forecast
   ports:
   - port: 8080
     protocol: TCP
     targetPort: 8080
-    nodePort: 30010
+    nodePort: 30018

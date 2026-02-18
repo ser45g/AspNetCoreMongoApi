@@ -8,7 +8,7 @@ namespace AspNetCoreMongoApi.Validators
     {
         public SeqOptionsValidator()
         {
-            RuleFor(x => x.Url).NotEmpty().Must(text => Uri.TryCreate(text, UriKind.Absolute, out _)).WithMessage("Seq otlp exporter is required");
+            RuleFor(x => x.Url).NotEmpty().WithMessage("Seq otlp exporter is required");
         }
     }
 }

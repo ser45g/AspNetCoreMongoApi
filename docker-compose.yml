@@ -40,7 +40,7 @@ services:
   seq-dashboard:
     image: datalust/seq
     volumes:
-      - seq-data:/data
+      - seq-data:/data:2025.2
     environment:
       - ACCEPT_EULA=Y
       - SEQ_PASSWORD=pwd

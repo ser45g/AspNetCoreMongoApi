@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
       - name: weather-forecast
-        image: seralex915/weather-forecast-api
+        image: seralex915/weather-forecast-api:latest
         env:
         - name: OTEL_EXPORTER_OTLP_HEADERS
           value: X-Seq-ApiKey=abcde12345
