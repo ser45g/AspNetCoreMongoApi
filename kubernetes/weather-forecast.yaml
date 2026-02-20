@@ -11,10 +11,38 @@ spec:
       labels:
         app: weather-forecast
     spec:
+      volumes:
+      - name: certificatesvolume
+        secret:
+          defaultMode: 0777
+          secretName: mypfx
+
       containers:
       - name: weather-forecast
-        image: seralex915/weather-forecast-api:latest
+        image: seralex915/aspnetcoremongoapi      
+        volumeMounts:
+          - name: certificatesvolume
+            mountPath: /certs
+            readOnly: true
         env:
+        - name: ASPNETCORE_ENVIRONMENT
+          value: Production  
+       
+        - name: ASPNETCORE_URLS
+          value: "https://+:8081"
+          
+        - name: ASPNETCORE_HTTPS_PORTS
+          value: "8081"
+
+        - name: Kestrel__Certificates__Default__Path
+          value: /certs/pfx-cert
+
+        - name: Kestrel__Certificates__Default__Password
+          valueFrom:
+            secretKeyRef:
+              name: app-tls-secret
+              key: tls.password
+
         - name: OTEL_EXPORTER_OTLP_HEADERS
           value: X-Seq-ApiKey=abcde12345
 
@@ -53,4 +81,4 @@ spec:
               memory: 768Mi
         
         ports:
-        - containerPort: 8080
+        - containerPort: 8081

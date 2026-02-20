@@ -1,0 +1,18 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: BackendTLSPolicy
+metadata:
+  name: backend-tls
+spec:
+  targetRefs:
+  - group: ''
+    kind: Service
+    name: mongo-express-service
+  - group: ''
+    kind: Service
+    name: weather-forecast-service
+  validation:
+    caCertificateRefs:
+    - name: backend-cert
+      group: ''
+      kind: ConfigMap
+    hostname: test.mytest.com

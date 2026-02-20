@@ -14,12 +14,34 @@ spec:
       labels:
         app: mongo-express
     spec:
+      volumes:
+      - name: certificatesvolume
+        secret:
+          defaultMode: 0777
+          secretName: mypfx
       containers:
       - name: mongo-express
         image: mongo-express
+        volumeMounts:
+        - name: certificatesvolume
+          mountPath: /certs
+          readOnly: true
+        resources:
+          limits:
+            cpu: '500m'
+            memory: 1024Mi
+          requests:
+            cpu: '300m'
+            memory: 400Mi
         ports:
         - containerPort: 8081
         env:
+        - name: ME_CONFIG_SITE_SSL_ENABLED
+          value: "true"
+        - name: ME_CONFIG_SITE_SSL_CRT_PATH
+          value: /certs/crt
+        - name: ME_CONFIG_SITE_SSL_KEY_PATH
+          value: /certs/key
         - name: ME_CONFIG_MONGODB_ADMINUSERNAME
           valueFrom:
             secretKeyRef:

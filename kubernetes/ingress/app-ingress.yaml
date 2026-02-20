@@ -18,18 +18,18 @@ spec:
     http:
       paths:
       - pathType: ImplementationSpecific
-        path: /
+        path: /mongo-express(/|$)(.*)
         backend:
           service:
             name: mongo-express-service
             port: 
               number: 8081
       - pathType: ImplementationSpecific
-        path: /weather-forecast
+        path: /api(/|$)(.*)
         backend:
           service:
             name: weather-forecast-service
             port: 
-              number: 8080
+              number: 8081
  
       
