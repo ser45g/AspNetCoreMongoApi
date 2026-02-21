@@ -15,7 +15,7 @@ spec:
       - name: certificatesvolume
         secret:
           defaultMode: 0777
-          secretName: mypfx
+          secretName: tls-pfx-certificate-secret
 
       containers:
       - name: weather-forecast
@@ -30,7 +30,7 @@ spec:
        
         - name: ASPNETCORE_URLS
           value: "https://+:8081"
-          
+
         - name: ASPNETCORE_HTTPS_PORTS
           value: "8081"
 
@@ -40,8 +40,8 @@ spec:
         - name: Kestrel__Certificates__Default__Password
           valueFrom:
             secretKeyRef:
-              name: app-tls-secret
-              key: tls.password
+              name: tls-pfx-password-secret
+              key: password
 
         - name: OTEL_EXPORTER_OTLP_HEADERS
           value: X-Seq-ApiKey=abcde12345

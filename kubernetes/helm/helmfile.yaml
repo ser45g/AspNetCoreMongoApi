@@ -1,0 +1,22 @@
+environments: 
+  production:
+    values: []
+  devel:
+    values: []
+---
+repositories:
+ - name: datalust
+   url: https://helm.datalust.co
+
+releases:
+- name: ngf
+  namespace: nginx-gateway
+  chart: oci://ghcr.io/nginx/charts/nginx-gateway-fabric
+
+- name: seq
+  namespace: default
+  chart: datalust/seq
+  values:
+    - envs/{{ .Environment.Name }}/values/seq.yaml
+
+

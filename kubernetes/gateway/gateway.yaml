@@ -12,7 +12,7 @@ spec:
       tls:
         mode: Terminate
         certificateRefs:
-          - name: app-tls-secret
+          - name: tls-gateway-key-and-certificate-secret
             kind: Secret
             
             

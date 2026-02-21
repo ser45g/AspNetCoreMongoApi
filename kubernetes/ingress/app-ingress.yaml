@@ -12,7 +12,7 @@ spec:
   tls:
   - hosts:
     - test.mytest.com
-    secretName: app-tls-secret
+    secretName: tls-secret
   rules:
   - host: test.mytest.com
     http:

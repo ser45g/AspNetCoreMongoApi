@@ -1,0 +1,21 @@
+image:
+  tag: 2025.2
+firstRunAdminUsername: admin
+firstRunAdminPasswordSecret:
+  name: seq-secret
+  key: password
+baseURI: https://test.mytest.com
+extraVolumes:
+- name: certificatesvolume
+  secret:
+    secretName: tls-seq-certificates-secret
+
+extraVolumeMounts:
+- name: certificatesvolume
+  mountPath: /data/Certificates
+extraEnvs:
+  - name: SEQ_CERTIFICATES_DEFAULTPASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: tls-pfx-password-secret
+        key: password

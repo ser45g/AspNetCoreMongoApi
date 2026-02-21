@@ -10,9 +10,12 @@ spec:
   - group: ''
     kind: Service
     name: weather-forecast-service
+  - group: ''
+    kind: Service
+    name: seq
   validation:
     caCertificateRefs:
-    - name: backend-cert
+    - name: tls-key-and-certificate-configmap
       group: ''
       kind: ConfigMap
     hostname: test.mytest.com

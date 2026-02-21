@@ -36,3 +36,17 @@ spec:
     backendRefs:
     - name: mongo-express-service
       port: 8081
+
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /seq
+    filters:
+    - type: URLRewrite
+      urlRewrite:
+        path:
+          type: ReplacePrefixMatch
+          replacePrefixMatch: /
+    backendRefs:
+    - name: seq
+      port: 80

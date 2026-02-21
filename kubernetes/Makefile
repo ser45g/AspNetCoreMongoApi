@@ -1,5 +1,10 @@
-create_secret_for_tls_certificates:
-	kubectl create secret generic mypfx --from-file=pfx-cert=rootCA.pfx --from-file=crt=rootCa.crt --from-file=key=rootCa.key
+create-secrets-for-tls:
+	kubectl create secret generic tls-seq-certificates-secret --from-file=443.pfx=rootCA.pfx --from-file=45341.pfx=rootCa.pfx
 
-create_configmap_for_tls_verification:
-	kubectl create configmap backend-cert --from-file=ca.crt=rootCA.crt
+	kubectl create configmap tls-key-and-certificate-configmap --from-file=ca.crt=rootCa.crt --from-file=ca.key=rootCa.key
+
+	kubectl create secret generic tls-pfx-password-secret --from-literal=password=550591
+
+	kubectl create secret generic tls-pfx-certificate-secret --from-file=pfx-cert=rootCA.pfx  
+
+	kubectl create secret tls tls-gateway-key-and-certificate-secret --cert=rootCa.crt --key=rootCa.key
