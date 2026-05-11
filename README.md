@@ -2,7 +2,7 @@
 
 ## In this project I just wanted to work a little bit with the Mongo Database. In the end, I actually used EF Core for that. Also, in this project I tried using different logging systems (ELK, Prometheus+Loki+Grafana, Aspire Dashboard, Seq, Jaeger dashboard), also, I used minimal apis with Carter at first, then I used the FastEndpoints library (I really should've put it on a different branch). Then I added Kubernetes deploy configs, then CI/CD with github. It also uses Problem Details and Global error handling.
 
-**To deploy our app to Kubernetes:**
+**To deploy our app to Kubernetes we need to create a .env file and set all the variables. .env.local is a template for that. After that we need to generate rootCA.key, rootCA.crt, rootCA.pfx files which are used for tls. Then:**
 
 `cd ./kubernetes`
 `make main`
