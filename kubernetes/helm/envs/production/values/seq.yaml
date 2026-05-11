@@ -14,6 +14,10 @@ extraVolumeMounts:
 - name: certificatesvolume
   mountPath: /data/Certificates
 extraEnvs:
+  - name: SEQ_API_LISTENURIS
+    value: "https://localhost:443,https://localhost:45341"
+  - name: SEQ_API_REDIRECTHTTPTOHTTPS
+    value: "true"
   - name: SEQ_CERTIFICATES_DEFAULTPASSWORD
     valueFrom:
       secretKeyRef:

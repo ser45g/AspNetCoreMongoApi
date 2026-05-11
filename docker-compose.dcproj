@@ -12,5 +12,24 @@
     <None Include="docker-compose.yml" />
     <None Include=".dockerignore" />
     <None Include="k6-test.js" />
+    <None Include="kubernetes\gateway\backend-tls-policy.yaml" />
+    <None Include="kubernetes\gateway\gateway.yaml" />
+    <None Include="kubernetes\gateway\http-route.yaml" />
+    <None Include="kubernetes\helm\envs\production\seq-secret.yaml" />
+    <None Include="kubernetes\helm\envs\production\values\seq.yaml" />
+    <None Include="kubernetes\helm\helmfile.yaml" />
+    <None Include="kubernetes\Makefile" />
+    <None Include="kubernetes\mongodb_and_mongo-express\mongo-express-config.yaml" />
+    <None Include="kubernetes\mongodb_and_mongo-express\mongo-express-deployment.yaml" />
+    <None Include="kubernetes\mongodb_and_mongo-express\mongo-express-service.yaml" />
+    <None Include="kubernetes\mongodb_and_mongo-express\mongo-secret.yaml" />
+    <None Include="kubernetes\mongodb_and_mongo-express\mongo-service.yaml" />
+    <None Include="kubernetes\mongodb_and_mongo-express\mongodb-deployment.yaml" />
+    <None Include="kubernetes\rootCA.crt" />
+    <None Include="kubernetes\rootCA.key" />
+    <None Include="kubernetes\rootCA.pfx" />
+    <None Include="kubernetes\weather-forecast-config.yaml" />
+    <None Include="kubernetes\weather-forecast-service.yaml" />
+    <None Include="kubernetes\weather-forecast.yaml" />
   </ItemGroup>
 </Project>

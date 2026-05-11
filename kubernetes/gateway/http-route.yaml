@@ -49,4 +49,4 @@ spec:
           replacePrefixMatch: /
     backendRefs:
     - name: seq
-      port: 80
+      port: 443
