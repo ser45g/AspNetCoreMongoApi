@@ -9,8 +9,8 @@ namespace AspNetCoreMongoApi.Validators
         public MongoDbOptionsValidator()
         {
             RuleFor(x => x.Username).NotEmpty().WithMessage("Username is required");
-            RuleFor(x => x.Password).NotEmpty().WithMessage("MaxRetries must be greater than 0");
-            RuleFor(x => x.Url).NotEmpty().WithMessage("Database Connection is required");
+            RuleFor(x => x.Password).NotEmpty().WithMessage("Password is required");
+            RuleFor(x => x.Url).NotEmpty().WithMessage("MongoDb url is required");
         }
     }
 }

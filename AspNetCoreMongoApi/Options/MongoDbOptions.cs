@@ -5,7 +5,7 @@
         public static readonly string ConfigurationSection = nameof(MongoDbOptions);
 
         public string ConnectionString { get {
-                return $@"mongodb://{Username}:{Password}@{Url}/db?authMechanism=SCRAM-SHA-1&authSource=admin";
+                return $@"mongodb://{Username}:{Password}@{Url}/db?authMechanism=SCRAM-SHA-256&authSource=admin";
             }
         }
        
