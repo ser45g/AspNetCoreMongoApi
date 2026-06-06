@@ -1,4 +1,4 @@
 ﻿namespace AspNetCoreMongoApi.Contracts.Request
 {
-    public record class WeatherForecastGetCursorRequest(int PageSize=10, Guid? Cursor=null);
+    public record class WeatherForecastGetCursorRequest(int? PageSize=null, Guid? Cursor=null);
 }

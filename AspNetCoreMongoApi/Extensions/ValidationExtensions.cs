@@ -1,0 +1,33 @@
+﻿using AspNetCoreMongoApi.Options;
+using AspNetCoreMongoApi.Validators.OptionsValidators;
+
+namespace AspNetCoreMongoApi.Extensions
+{
+    public static class ValidationExtensions
+    {
+        public static IServiceCollection AddValidatedApplicationOptions(this IServiceCollection services) {
+
+            services.AddOptions<MongoDbOptions>().BindConfiguration(MongoDbOptions.ConfigurationSection).ValidateOnStart().Validate(mongoDbOptions =>
+            {
+                var validator = new MongoDbOptionsValidator();
+                var validationResult = validator.Validate(mongoDbOptions);
+
+                return validationResult.IsValid;
+            });
+
+            services.AddOptions<SeqOptions>().BindConfiguration(SeqOptions.ConfigurationSection).ValidateOnStart().Validate(seqOptions =>
+            {
+                var validator = new SeqOptionsValidator();
+                var validationResult = validator.Validate(seqOptions);
+
+                return validationResult.IsValid;
+            });
+
+            services.AddOptions<WeatherForecastPaginationOptions>().BindConfiguration(WeatherForecastPaginationOptions.ConfigurationSection);
+
+            services.AddOptions<WeatherForecastValidationOptions>().BindConfiguration(WeatherForecastValidationOptions.ConfigurationSection);
+
+            return services;
+        }
+    }
+}

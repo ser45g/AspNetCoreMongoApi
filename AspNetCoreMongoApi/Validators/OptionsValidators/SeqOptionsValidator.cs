@@ -1,7 +1,7 @@
 ﻿using AspNetCoreMongoApi.Options;
 using FluentValidation;
 
-namespace AspNetCoreMongoApi.Validators
+namespace AspNetCoreMongoApi.Validators.OptionsValidators
 {
 
     public class SeqOptionsValidator : AbstractValidator<SeqOptions>
@@ -10,6 +10,5 @@ namespace AspNetCoreMongoApi.Validators
         {
             RuleFor(x => x.Url).NotEmpty().WithMessage("Seq otlp exporter is required");
         }
-        //Hello, I'm Mr. Frog. Fuck you
     }
 }

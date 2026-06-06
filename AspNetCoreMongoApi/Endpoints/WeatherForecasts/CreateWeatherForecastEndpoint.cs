@@ -4,12 +4,13 @@ using AspNetCoreMongoApi.Data;
 using AspNetCoreMongoApi.Entities;
 using AutoMapper;
 using FastEndpoints;
+using FluentValidation;
 using IMapper = AutoMapper.IMapper;
 
 namespace AspNetCoreMongoApi.Endpoints.WeatherForecasts
 {
     
-    public class CreateWeatherForecastEndpoint(IMapper _mapper, MongoDbContext _context):Endpoint<WeatherForecastCreateRequest, WeatherForecastDto>
+    public class CreateWeatherForecastEndpoint(IMapper _mapper, IValidator<WeatherForecastCreateRequest> validator, MongoDbContext _context):Endpoint<WeatherForecastCreateRequest, WeatherForecastResponse>
     {
         public override void Configure()
         {
@@ -25,9 +26,11 @@ namespace AspNetCoreMongoApi.Endpoints.WeatherForecasts
 
             await _context.SaveChangesAsync();
 
-            var response = _mapper.Map<WeatherForecastDto>(weatherForecast);
+            var response = _mapper.Map<WeatherForecastResponse>(weatherForecast);
 
             await Send.CreatedAtAsync<GetWeatherForecastByIdEndpoint>(new { id = response.Id }, response, cancellation: ct);
         }
+
+        
     }
 }

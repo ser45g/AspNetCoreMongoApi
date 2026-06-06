@@ -3,21 +3,24 @@ using AspNetCoreMongoApi.Contracts.Response;
 using AspNetCoreMongoApi.Data;
 using AutoMapper;
 using FastEndpoints;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using IMapper = AutoMapper.IMapper;
 
 namespace AspNetCoreMongoApi.Endpoints.WeatherForecasts
 {
-    public class GetWeatherForecastByIdEndpoint(IMapper _mapper, MongoDbContext _context):Endpoint<WeatherForecastGetByIdRequest, WeatherForecastDto>
+    public class GetWeatherForecastByIdEndpoint(IMapper _mapper, MongoDbContext _context):Endpoint<WeatherForecastGetByIdRequest, WeatherForecastResponse>
     {
         public override void Configure()
         {
             Get("/weather-forecast/{id:guid}");
             
             AllowAnonymous();
+
+            Description(x => x.ClearDefaultAccepts());
         }
 
-        public override async Task HandleAsync(WeatherForecastGetByIdRequest req, CancellationToken ct)
+        public override async Task HandleAsync( WeatherForecastGetByIdRequest req, CancellationToken ct)
         {
             var weatherForecast = await _context.WeatherForecasts.FirstOrDefaultAsync(w => w.Id == req.Id);
 
@@ -26,7 +29,7 @@ namespace AspNetCoreMongoApi.Endpoints.WeatherForecasts
             {
                 await Send.NotFoundAsync(cancellation: ct);
             }
-            var response = _mapper.Map<WeatherForecastDto>(weatherForecast);
+            var response = _mapper.Map<WeatherForecastResponse>(weatherForecast);
             await Send.OkAsync(response, ct);
         }
     }

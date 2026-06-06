@@ -9,7 +9,7 @@ namespace AspNetCoreMongoApi.Profiles
     {
         public AppMappingProfile()
         {
-            CreateMap<WeatherForecast, WeatherForecastDto>();
+            CreateMap<WeatherForecast, WeatherForecastResponse>();
 
             CreateMap<WeatherForecastCreateRequest, WeatherForecast>();
 

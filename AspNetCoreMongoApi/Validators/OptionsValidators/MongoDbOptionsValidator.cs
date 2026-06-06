@@ -1,7 +1,7 @@
 ﻿using AspNetCoreMongoApi.Options;
 using FluentValidation;
 
-namespace AspNetCoreMongoApi.Validators
+namespace AspNetCoreMongoApi.Validators.OptionsValidators
 {
 
     public class MongoDbOptionsValidator : AbstractValidator<MongoDbOptions>

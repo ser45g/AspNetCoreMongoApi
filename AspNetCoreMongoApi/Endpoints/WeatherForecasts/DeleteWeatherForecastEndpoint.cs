@@ -11,6 +11,7 @@ namespace AspNetCoreMongoApi.Endpoints.WeatherForecasts
         {
             Delete("/weather-forecast/{id:guid}");
             AllowAnonymous();
+            Description(x => x.ClearDefaultAccepts());
         }
 
         public override async Task HandleAsync(WeatherForecastDeleteRequest req, CancellationToken ct)

@@ -1,49 +1,26 @@
 using AspNetCoreMongoApi.Data;
 using AspNetCoreMongoApi.ErrorHandlers;
+using AspNetCoreMongoApi.Extensions;
 using AspNetCoreMongoApi.Options;
 using AspNetCoreMongoApi.Profiles;
-using AspNetCoreMongoApi.Validators;
 using FastEndpoints;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Scalar.AspNetCore;
-using System.Text.Json;
-using Microsoft.AspNetCore.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
 
-var mongoDbOptions = builder.Configuration.GetSection(MongoDbOptions.ConfigurationSection).Get<MongoDbOptions>();
-var seqOptions = builder.Configuration.GetSection(SeqOptions.ConfigurationSection).Get<SeqOptions>();
+var mongoDbOptions = builder.Configuration.GetRequiredSection(MongoDbOptions.ConfigurationSection).Get<MongoDbOptions>();
+ArgumentNullException.ThrowIfNull(mongoDbOptions);
 
-if (mongoDbOptions == null || seqOptions == null)
-{
-    Console.Write(JsonSerializer.Serialize<MongoDbOptions>(mongoDbOptions));
-    Console.WriteLine(JsonSerializer.Serialize<SeqOptions>(seqOptions));
-    throw new ArgumentException("Configuration is incorrect");
-}
-
-var mongoDbOptionsValidator = new MongoDbOptionsValidator();
-var mongoDbOptionsValidationResult = mongoDbOptionsValidator.Validate(mongoDbOptions);
-
-if (!mongoDbOptionsValidationResult.IsValid)
-{
-    var errors = string.Join(", ", mongoDbOptionsValidationResult.Errors.Select(e => e.ErrorMessage));
-    throw new InvalidOperationException($"Configuration validation failed: {errors}");
-}
-
-var seqOptionsValidator = new SeqOptionsValidator();
-var seqOptionsValidationResult = seqOptionsValidator.Validate(seqOptions);
-
-if (!seqOptionsValidationResult.IsValid)
-{
-    var errors = string.Join(", ", seqOptionsValidationResult.Errors.Select(e => e.ErrorMessage));
-    throw new InvalidOperationException($"Configuration validation failed: {errors}");
-}
+var seqOptions = builder.Configuration.GetRequiredSection(SeqOptions.ConfigurationSection).Get<SeqOptions>();
+ArgumentNullException.ThrowIfNull(seqOptions);
 
 builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"] = seqOptions.OtlpEndpoint;
 
@@ -62,12 +39,13 @@ builder.Services.AddCors(options =>
 });
 builder.Services.AddLogging();
 
+builder.Services.AddValidatedApplicationOptions();
+
 builder.Services.AddOpenTelemetry().ConfigureResource(resource =>
 {
     resource.AddService("WeatherForecast");
 }).WithMetrics(metrics =>
 {
-
     metrics.AddAspNetCoreInstrumentation().AddHttpClientInstrumentation();
 
     metrics.AddOtlpExporter();
@@ -84,6 +62,8 @@ builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 builder.Services.AddFastEndpoints();
+
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
 var app = builder.Build();
 

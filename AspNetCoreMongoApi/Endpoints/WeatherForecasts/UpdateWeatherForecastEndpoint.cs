@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AspNetCoreMongoApi.Endpoints.WeatherForecasts
 {
-    public class UpdateWeatherForecastEndpoint(AutoMapper.IMapper _mapper, MongoDbContext _context) : Endpoint<WeatherForecastUpdateRequest, WeatherForecastDto>
+    public class UpdateWeatherForecastEndpoint(AutoMapper.IMapper _mapper, MongoDbContext _context) : Endpoint<WeatherForecastUpdateRequest, WeatherForecastResponse>
     {
         public override void Configure()
         {

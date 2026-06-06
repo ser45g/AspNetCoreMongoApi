@@ -1,12 +1,14 @@
 ﻿using AspNetCoreMongoApi.Contracts.Request;
 using AspNetCoreMongoApi.Contracts.Response;
 using AspNetCoreMongoApi.Data;
+using AspNetCoreMongoApi.Options;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace AspNetCoreMongoApi.Endpoints.WeatherForecasts
 {
-    public class GetWeatherForecastsEndpoint(AutoMapper.IMapper _mapper, MongoDbContext _context) : Endpoint<WeatherForecastGetCursorRequest, WeatherForecastCursorResponse<IEnumerable<WeatherForecastDto>>>
+    public class GetWeatherForecastsEndpoint(AutoMapper.IMapper mapper, MongoDbContext dbContext, IOptions<WeatherForecastPaginationOptions> paginationOptions) : Endpoint<WeatherForecastGetCursorRequest, WeatherForecastCursorResponse<IEnumerable<WeatherForecastResponse>>>
     {
         public override void Configure()
         {
@@ -17,8 +19,9 @@ namespace AspNetCoreMongoApi.Endpoints.WeatherForecasts
         public override async Task HandleAsync(WeatherForecastGetCursorRequest request, CancellationToken ct)
         {
             var startWith = request.Cursor ?? Guid.Empty;
+            var pageSize = request.PageSize ?? paginationOptions.Value.DefaultPageSize;
 
-            var weatherForecasts = await _context.WeatherForecasts.Where(w => w.Id >= startWith).Take(request.PageSize+1).OrderBy(w=>w.Id).ToListAsync(ct);
+            var weatherForecasts = await dbContext.WeatherForecasts.Where(w => w.Id >= startWith).Take(pageSize+1).OrderBy(w=>w.Id).ToListAsync(ct);
 
             Guid? cursor = null;
 
@@ -26,15 +29,16 @@ namespace AspNetCoreMongoApi.Endpoints.WeatherForecasts
             {
                 var last = weatherForecasts.LastOrDefault();
 
-                cursor = last?.Id;
-
                 if (last != null)
+                {
+                    cursor = last.Id;
                     weatherForecasts.Remove(last);
+                }
             }
 
-            var weatherForecastDtos = _mapper.Map<IEnumerable<WeatherForecastDto>>(weatherForecasts);
+            var weatherForecastDtos = mapper.Map<IEnumerable<WeatherForecastResponse>>(weatherForecasts);
 
-            var response = new WeatherForecastCursorResponse<IEnumerable<WeatherForecastDto>>(cursor, weatherForecastDtos, weatherForecasts.Count);
+            var response = new WeatherForecastCursorResponse<IEnumerable<WeatherForecastResponse>>(cursor, weatherForecastDtos, weatherForecasts.Count);
 
             await Send.OkAsync(response, ct);
         }
