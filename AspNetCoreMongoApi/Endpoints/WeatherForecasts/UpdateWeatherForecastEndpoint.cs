@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AspNetCoreMongoApi.Endpoints.WeatherForecasts
 {
-    public class UpdateWeatherForecastEndpoint(AutoMapper.IMapper _mapper, MongoDbContext _context) : Endpoint<WeatherForecastUpdateRequest, WeatherForecastResponse>
+    public class UpdateWeatherForecastEndpoint(AutoMapper.IMapper _mapper, MongoDbContext _context) : Endpoint<UpdateWeatherForecastRequest, WeatherForecastResponse>
     {
         public override void Configure()
         {
@@ -15,7 +15,7 @@ namespace AspNetCoreMongoApi.Endpoints.WeatherForecasts
             AllowAnonymous();
         }
 
-        public override async Task HandleAsync(WeatherForecastUpdateRequest req, CancellationToken ct)
+        public override async Task HandleAsync(UpdateWeatherForecastRequest req, CancellationToken ct)
         {
             var weatherForecast = _mapper.Map<WeatherForecast>(req);
 

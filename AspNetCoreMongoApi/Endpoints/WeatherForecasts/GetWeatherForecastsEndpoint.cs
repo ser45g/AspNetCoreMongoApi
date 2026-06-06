@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 
 namespace AspNetCoreMongoApi.Endpoints.WeatherForecasts
 {
-    public class GetWeatherForecastsEndpoint(AutoMapper.IMapper mapper, MongoDbContext dbContext, IOptions<WeatherForecastPaginationOptions> paginationOptions) : Endpoint<WeatherForecastGetCursorRequest, WeatherForecastCursorResponse<IEnumerable<WeatherForecastResponse>>>
+    public class GetWeatherForecastsEndpoint(AutoMapper.IMapper mapper, MongoDbContext dbContext, IOptions<WeatherForecastPaginationOptions> paginationOptions) : Endpoint<GetCursorWeatherForecastsRequest, WeatherForecastCursorResponse<IEnumerable<WeatherForecastResponse>>>
     {
         public override void Configure()
         {
@@ -16,7 +16,7 @@ namespace AspNetCoreMongoApi.Endpoints.WeatherForecasts
             AllowAnonymous();
         }
 
-        public override async Task HandleAsync(WeatherForecastGetCursorRequest request, CancellationToken ct)
+        public override async Task HandleAsync(GetCursorWeatherForecastsRequest request, CancellationToken ct)
         {
             var startWith = request.Cursor ?? Guid.Empty;
             var pageSize = request.PageSize ?? paginationOptions.Value.DefaultPageSize;

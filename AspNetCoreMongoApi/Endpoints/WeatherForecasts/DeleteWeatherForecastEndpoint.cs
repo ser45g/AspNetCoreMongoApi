@@ -5,7 +5,7 @@ using FastEndpoints;
 
 namespace AspNetCoreMongoApi.Endpoints.WeatherForecasts
 {
-    public class DeleteWeatherForecastEndpoint(MongoDbContext _context):Endpoint<WeatherForecastDeleteRequest>
+    public class DeleteWeatherForecastEndpoint(MongoDbContext _context):Endpoint<DeleteWeatherForecastRequest>
     {
         public override void Configure()
         {
@@ -14,7 +14,7 @@ namespace AspNetCoreMongoApi.Endpoints.WeatherForecasts
             Description(x => x.ClearDefaultAccepts());
         }
 
-        public override async Task HandleAsync(WeatherForecastDeleteRequest req, CancellationToken ct)
+        public override async Task HandleAsync(DeleteWeatherForecastRequest req, CancellationToken ct)
         {
             _context.WeatherForecasts.Remove(new WeatherForecast() { Id = req.Id });
 

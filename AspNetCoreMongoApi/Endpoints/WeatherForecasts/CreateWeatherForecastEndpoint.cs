@@ -10,7 +10,7 @@ using IMapper = AutoMapper.IMapper;
 namespace AspNetCoreMongoApi.Endpoints.WeatherForecasts
 {
     
-    public class CreateWeatherForecastEndpoint(IMapper _mapper, IValidator<WeatherForecastCreateRequest> validator, MongoDbContext _context):Endpoint<WeatherForecastCreateRequest, WeatherForecastResponse>
+    public class CreateWeatherForecastEndpoint(IMapper _mapper, IValidator<CreateWeatherForecastRequest> validator, MongoDbContext _context):Endpoint<CreateWeatherForecastRequest, WeatherForecastResponse>
     {
         public override void Configure()
         {
@@ -18,7 +18,7 @@ namespace AspNetCoreMongoApi.Endpoints.WeatherForecasts
             AllowAnonymous();
         }
 
-        public override async Task HandleAsync(WeatherForecastCreateRequest req, CancellationToken ct)
+        public override async Task HandleAsync(CreateWeatherForecastRequest req, CancellationToken ct)
         {
             var weatherForecast = _mapper.Map<WeatherForecast>(req);
 

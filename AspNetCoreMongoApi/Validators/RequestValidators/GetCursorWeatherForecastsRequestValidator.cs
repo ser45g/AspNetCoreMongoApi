@@ -6,9 +6,9 @@ using Microsoft.Extensions.Options;
 
 namespace AspNetCoreMongoApi.Validators.RequestValidators
 {
-    public class WeatherForecastGetCursorRequestValidator:Validator<WeatherForecastGetCursorRequest>
+    public class GetCursorWeatherForecastsRequestValidator:Validator<GetCursorWeatherForecastsRequest>
     {
-        public WeatherForecastGetCursorRequestValidator(IOptions<WeatherForecastPaginationOptions> options) {
+        public GetCursorWeatherForecastsRequestValidator(IOptions<WeatherForecastPaginationOptions> options) {
 
             RuleFor(r => r.PageSize).InclusiveBetween(options.Value.MinPageSize, options.Value.MaxPageSize);
         }

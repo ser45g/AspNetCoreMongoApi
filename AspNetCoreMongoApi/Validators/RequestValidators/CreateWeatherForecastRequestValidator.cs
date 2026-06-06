@@ -6,9 +6,9 @@ using Microsoft.Extensions.Options;
 
 namespace AspNetCoreMongoApi.Validators.RequestValidators
 {
-    public class WeatherForecastUpdateRequestValidator: Validator<WeatherForecastUpdateRequest>
+    public class CreateWeatherForecastRequestValidator: Validator<CreateWeatherForecastRequest>
     {
-        public WeatherForecastUpdateRequestValidator(IOptions<WeatherForecastValidationOptions> options) {
+        public CreateWeatherForecastRequestValidator(IOptions<WeatherForecastValidationOptions> options) {
             RuleFor(w => w.Date).NotNull();
             RuleFor(w => w.TemperatureC).NotNull().InclusiveBetween(options.Value.MinTemperatureC, options.Value.MaxTemperatureC);
             RuleFor(w => w.Summary).Length(options.Value.MinSummaryLength, options.Value.MaxSummaryLength);

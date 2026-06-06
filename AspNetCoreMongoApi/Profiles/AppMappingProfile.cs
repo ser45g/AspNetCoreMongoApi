@@ -11,9 +11,9 @@ namespace AspNetCoreMongoApi.Profiles
         {
             CreateMap<WeatherForecast, WeatherForecastResponse>();
 
-            CreateMap<WeatherForecastCreateRequest, WeatherForecast>();
+            CreateMap<CreateWeatherForecastRequest, WeatherForecast>();
 
-            CreateMap<WeatherForecastUpdateRequest, WeatherForecast>();
+            CreateMap<UpdateWeatherForecastRequest, WeatherForecast>();
         }
     }
 }
