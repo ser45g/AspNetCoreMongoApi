@@ -1,5 +1,4 @@
 using AspNetCoreMongoApi.Data;
-using AspNetCoreMongoApi.ErrorHandlers;
 using AspNetCoreMongoApi.Extensions;
 using AspNetCoreMongoApi.Options;
 using AspNetCoreMongoApi.Profiles;
@@ -59,7 +58,6 @@ builder.Services.AddOpenTelemetry().ConfigureResource(resource =>
 builder.Logging.AddOpenTelemetry(logging => logging.AddOtlpExporter());
 
 builder.Services.AddProblemDetails();
-builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 builder.Services.AddFastEndpoints();
 
@@ -81,10 +79,12 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseCors();
-app.MapFastEndpoints();
 
-app.UseExceptionHandler();
-app.UseStatusCodePages();
+app.MapFastEndpoints(c =>
+{
+    c.Errors.UseProblemDetails();
+});
+
 
 using var scope = app.Services.CreateScope();
 

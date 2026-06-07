@@ -28,17 +28,17 @@ namespace AspNetCoreMongoApi.Endpoints.WeatherForecasts
 
             weatherForecastsQuery = weatherForecastsQuery.Where(w => w.Id >= startWith);
 
-            weatherForecastsQuery.AddFilters(request.MinDate, request.MaxDate, request.MinTemperatureC, request.MaxTemperatureC, request.SummarySearchTerm);
+            weatherForecastsQuery= weatherForecastsQuery.AddFilters(request.MinDate, request.MaxDate, request.MinTemperatureC, request.MaxTemperatureC, request.SummarySearchTerm);
 
             var keySelector = GetKeySelector(request.SortColumn);
 
             weatherForecastsQuery = request.SortAsc==true ? weatherForecastsQuery.OrderBy(keySelector): weatherForecastsQuery.OrderByDescending(keySelector);
 
-            var weatherForecasts = await weatherForecastsQuery.Take(pageSize + 1).ToListAsync();
+            var weatherForecasts = await weatherForecastsQuery.Take(pageSize + 1).ToListAsync(ct);
 
             Guid? cursor = null;
 
-            if(weatherForecasts.Count == request.PageSize + 1)
+            if(weatherForecasts.Count == pageSize + 1)
             {
                 var last = weatherForecasts.LastOrDefault();
 
