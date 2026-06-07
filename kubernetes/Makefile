@@ -5,17 +5,17 @@ main: create-secrets-for-tls install-charts create-secrets-for-mongodb create-se
 	kubectl apply -f . -R
 
 create-secrets-for-mongodb:
-	kubectl create secret generic mongodb-secret --from-literal=mongo-root-username=${mongo-root-username} --from-literal=mongo-root-password=${mongo-root-password}
+	kubectl create secret generic mongodb-secret --from-literal=mongo-root-username=${MONGO_INITDB_ROOT_USERNAME} --from-literal=mongo-root-password=${MONGO_INITDB_ROOT_PASSWORD}
 
 create-secrets-for-seq:
-	kubectl create secret generic seq-secret --from-literal=password=${SEQ_FIRSTADMINLOGINPASSWORD}
+	kubectl create secret generic seq-secret --from-literal=password=${SEQ_PASSWORD} --from-literal=password-hash=${SEQ_FIRSTRUN_ADMINPASSWORDHASH}
 
 create-secrets-for-tls:
 	kubectl create secret generic tls-seq-certificates-secret --from-file=443.pfx=rootCA.pfx --from-file=45341.pfx=rootCa.pfx
 
 	kubectl create configmap tls-key-and-certificate-configmap --from-file=ca.crt=rootCa.crt --from-file=ca.key=rootCa.key
 
-	kubectl create secret generic tls-pfx-password-secret --from-literal=password=${tls-password}
+	kubectl create secret generic tls-pfx-password-secret --from-literal=password=${TLS_PASSWORD}
 
 	kubectl create secret generic tls-pfx-certificate-secret --from-file=pfx-cert=rootCA.pfx  
 

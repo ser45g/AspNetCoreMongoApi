@@ -7,38 +7,38 @@ services:
       context: .
       dockerfile: AspNetCoreMongoApi/Dockerfile
     environment:
-       - "MongoDbOptions__Username=root"
-       - "MongoDbOptions__Password=pwd"
+       - "MongoDbOptions__Username=${MONGO_INITDB_ROOT_USERNAME}"
+       - "MongoDbOptions__Password=${MONGO_INITDB_ROOT_PASSWORD}"
        - "MongoDbOptions__Url=mongo:27017"
        - "SeqOptions__Url=seq-dashboard:5341"
        - "OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf"
-       - "OTEL_EXPORTER_OTLP_HEADERS=X-Seq-ApiKey=abcde12345"  
+       - "OTEL_EXPORTER_OTLP_HEADERS=X-Seq-ApiKey=${X_SEQ_API_KEY_HEADER}"  
   mongo:
-    image: mongo
+    image: mongo:8.2.7
     restart: always
     ports:
       - 27017:27017
     volumes:
       - mongo-data:/data/db
     environment:
-      MONGO_INITDB_DATABASE: db
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: pwd
+      MONGO_INITDB_DATABASE: ${MONGO_INITDB_ROOT_NAME}
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
 
   mongo-express:
-    image: mongo-express
+    image: mongo-express:1.0.2-20-alpine3.19
     restart: always
     volumes:
       - mongo-express-data:/data/db
     ports:
       - 8082:8081
     environment:
-      ME_CONFIG_MONGODB_URL: mongodb://root:pwd@mongo:27017
+      ME_CONFIG_MONGODB_URL: mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@mongo:27017
       ME_CONFIG_BASICAUTH_ENABLED: true
-      ME_CONFIG_BASICAUTH_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
-      ME_CONFIG_BASICAUTH_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      ME_CONFIG_BASICAUTH_USERNAME: ${MONGOEXPRESS_USERNAME}
+      ME_CONFIG_BASICAUTH_PASSWORD: ${MONGOEXPRESS_PASSWORD}
   seq-dashboard:
-    image: datalust/seq
+    image: datalust/seq:2025.2
     volumes:
       - seq-data:/data:2025.2
     environment:
