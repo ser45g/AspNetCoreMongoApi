@@ -1,10 +1,13 @@
 ﻿using AspNetCoreMongoApi.Contracts.Request;
 using AspNetCoreMongoApi.Contracts.Response;
 using AspNetCoreMongoApi.Data;
+using AspNetCoreMongoApi.Entities;
+using AspNetCoreMongoApi.Extensions;
 using AspNetCoreMongoApi.Options;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using System.Linq.Expressions;
 
 namespace AspNetCoreMongoApi.Endpoints.WeatherForecasts
 {
@@ -21,7 +24,17 @@ namespace AspNetCoreMongoApi.Endpoints.WeatherForecasts
             var startWith = request.Cursor ?? Guid.Empty;
             var pageSize = request.PageSize ?? paginationOptions.Value.DefaultPageSize;
 
-            var weatherForecasts = await dbContext.WeatherForecasts.Where(w => w.Id >= startWith).Take(pageSize+1).OrderBy(w=>w.Id).ToListAsync(ct);
+            IQueryable<WeatherForecast> weatherForecastsQuery = dbContext.WeatherForecasts.AsNoTracking();
+
+            weatherForecastsQuery = weatherForecastsQuery.Where(w => w.Id >= startWith);
+
+            weatherForecastsQuery.AddFilters(request.MinDate, request.MaxDate, request.MinTemperatureC, request.MaxTemperatureC, request.SummarySearchTerm);
+
+            var keySelector = GetKeySelector(request.SortColumn);
+
+            weatherForecastsQuery = request.SortAsc==true ? weatherForecastsQuery.OrderBy(keySelector): weatherForecastsQuery.OrderByDescending(keySelector);
+
+            var weatherForecasts = await weatherForecastsQuery.Take(pageSize + 1).ToListAsync();
 
             Guid? cursor = null;
 
@@ -42,6 +55,17 @@ namespace AspNetCoreMongoApi.Endpoints.WeatherForecasts
 
             await Send.OkAsync(response, ct);
         }
-       
+
+        private Expression<Func<WeatherForecast, object>> GetKeySelector(string? sortColumn=null)
+        {
+            Expression<Func<WeatherForecast, object>> keySelector = sortColumn?.ToLower() switch
+            {
+                "temperaturec" => w => w.TemperatureC,
+                "date" => w => w.Date,
+                _ => w => w.Id
+            };
+            return keySelector;
+        }
+
     }
 }
