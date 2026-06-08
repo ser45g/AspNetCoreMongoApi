@@ -33,6 +33,8 @@ namespace AspNetCoreMongoApi.Endpoints.WeatherForecasts
 
             weatherForecastsQuery = request.SortAsc==true ? weatherForecastsQuery.OrderBy(keySelector): weatherForecastsQuery.OrderByDescending(keySelector);
 
+            int totalCount = await weatherForecastsQuery.CountAsync(); 
+
             var weatherForecasts = await weatherForecastsQuery.Take(pageSize + 1).ToListAsync(ct);
 
             Guid? cursor = null;
@@ -50,7 +52,7 @@ namespace AspNetCoreMongoApi.Endpoints.WeatherForecasts
 
             var weatherForecastDtos = mapper.Map<IEnumerable<WeatherForecastResponse>>(weatherForecasts);
 
-            var response = new WeatherForecastsCursorResponse<IEnumerable<WeatherForecastResponse>>(cursor, weatherForecastDtos, weatherForecasts.Count);
+            var response = new WeatherForecastsCursorResponse<IEnumerable<WeatherForecastResponse>>(cursor, weatherForecastDtos, weatherForecasts.Count, totalCount);
 
             await Send.OkAsync(response, ct);
         }

@@ -1,4 +1,4 @@
 ﻿namespace AspNetCoreMongoApi.Contracts.Response
 {
-    public record class WeatherForecastsCursorResponse<T>(Guid? NextCursor, T Data, int Count);
+    public record class WeatherForecastsCursorResponse<T>(Guid? NextCursor, T Data, int Count, int TotalCount);
 }
