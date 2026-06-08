@@ -10,7 +10,6 @@ namespace AspNetCoreMongoApi.Endpoints.WeatherForecasts
         public override void Configure()
         {
             Delete("/weather-forecast/{id:guid}");
-            AllowAnonymous();
             Description(x => x.ClearDefaultAccepts());
         }
 

@@ -11,12 +11,11 @@ using System.Linq.Expressions;
 
 namespace AspNetCoreMongoApi.Endpoints.WeatherForecasts
 {
-    public class GetWeatherForecastsEndpoint(AutoMapper.IMapper mapper, MongoDbContext dbContext, IOptions<WeatherForecastPaginationOptions> paginationOptions) : Endpoint<GetCursorWeatherForecastsRequest, WeatherForecastCursorResponse<IEnumerable<WeatherForecastResponse>>>
+    public class GetWeatherForecastsEndpoint(AutoMapper.IMapper mapper, MongoDbContext dbContext, IOptions<WeatherForecastPaginationOptions> paginationOptions) : Endpoint<GetCursorWeatherForecastsRequest, WeatherForecastsCursorResponse<IEnumerable<WeatherForecastResponse>>>
     {
         public override void Configure()
         {
             Get("/weather-forecast");
-            AllowAnonymous();
         }
 
         public override async Task HandleAsync(GetCursorWeatherForecastsRequest request, CancellationToken ct)
@@ -51,7 +50,7 @@ namespace AspNetCoreMongoApi.Endpoints.WeatherForecasts
 
             var weatherForecastDtos = mapper.Map<IEnumerable<WeatherForecastResponse>>(weatherForecasts);
 
-            var response = new WeatherForecastCursorResponse<IEnumerable<WeatherForecastResponse>>(cursor, weatherForecastDtos, weatherForecasts.Count);
+            var response = new WeatherForecastsCursorResponse<IEnumerable<WeatherForecastResponse>>(cursor, weatherForecastDtos, weatherForecasts.Count);
 
             await Send.OkAsync(response, ct);
         }

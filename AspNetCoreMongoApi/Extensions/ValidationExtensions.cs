@@ -23,9 +23,19 @@ namespace AspNetCoreMongoApi.Extensions
                 return validationResult.IsValid;
             });
 
+            services.AddOptions<AuthenticationOptions>().BindConfiguration(AuthenticationOptions.ConfigurationSection).ValidateOnStart().Validate(authOptions =>
+            {
+                var validator = new AuthenticationOptionsValidator();
+                var validationResult = validator.Validate(authOptions);
+
+                return validationResult.IsValid;
+            });
+
             services.AddOptions<WeatherForecastPaginationOptions>().BindConfiguration(WeatherForecastPaginationOptions.ConfigurationSection);
 
             services.AddOptions<WeatherForecastValidationOptions>().BindConfiguration(WeatherForecastValidationOptions.ConfigurationSection);
+
+            
 
             return services;
         }

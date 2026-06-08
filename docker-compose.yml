@@ -10,9 +10,51 @@ services:
        - "MongoDbOptions__Username=${MONGO_INITDB_ROOT_USERNAME}"
        - "MongoDbOptions__Password=${MONGO_INITDB_ROOT_PASSWORD}"
        - "MongoDbOptions__Url=mongo:27017"
+
+       - "AuthenticationOptions__MetadataAddress=http://keycloak:8080/realms/auth_demo/.well-known/openid-configuration"
+       - "AuthenticationOptions__ValidIssuer=http://localhost:8080/realms/auth_demo"
+       - "AuthenticationOptions__AuthorizationUrl=http://localhost:8080/realms/auth_demo/protocol/openid-connect/auth"
+       - "AuthenticationOptions__TokenUrl=http://localhost:8080/realms/auth_demo/protocol/openid-connect/token"
+       - "AuthenticationOptions__RefreshUrl=http://localhost:8080/realms/auth_demo/protocol/openid-connect/token"
+       - "AuthenticationOptions__Audience=public-client"
+       - "AuthenticationOptions__ClientId=public-client"
+       - "AuthenticationOptions__RequireHttps=false"
+
+       - "AuthenticationOptions__Scopes__public-client-audience-scope=public-client-audience-scope"
+       - "AuthenticationOptions__Scopes__profile=profile"
+       - "AuthenticationOptions__Scopes__openid=openid"
+
        - "SeqOptions__Url=seq-dashboard:5341"
        - "OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf"
-       - "OTEL_EXPORTER_OTLP_HEADERS=X-Seq-ApiKey=${X_SEQ_API_KEY_HEADER}"  
+       - "OTEL_EXPORTER_OTLP_HEADERS=X-Seq-ApiKey=${X_SEQ_API_KEY_HEADER}"
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.5.2
+    container_name: keycloak
+    command: start-dev
+    volumes:
+      - ./keycloak-imports:/opt/jboss/keycloak/imports
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HEALTH_ENABLED: true
+      KC_DB: postgres
+      KC_DB_URL_HOST: postgres_keycloak
+      KC_DB_URL_DATABASE: keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: keycloak
+      KEYCLOAK_IMPORT: /opt/jboss/keycloak/imports/realm-export.json -Dkeycloak.profile.feature.upload_scripts=enabled
+    ports:
+    - 8080:8080
+
+  postgres_keycloak:
+    container_name: postgres_keycloak
+    image: postgres:19beta1
+    environment:
+      POSTGRES-DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: keycloak
+    volumes:
+      - postgres-keycloak-data:/var/lib/postgresql
   mongo:
     image: mongo:8.2.7
     restart: always
@@ -50,7 +92,8 @@ services:
       - 5341:5341
       - 8083:80
 volumes:
-    
+  postgres-keycloak-data:
+    driver: local
   mongo-data:
     driver: local  
   mongo-express-data:

@@ -15,7 +15,6 @@ namespace AspNetCoreMongoApi.Endpoints.WeatherForecasts
         public override void Configure()
         {
             Post("/weather-forecast");
-            AllowAnonymous();
         }
 
         public override async Task HandleAsync(CreateWeatherForecastRequest req, CancellationToken ct)

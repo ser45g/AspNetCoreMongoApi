@@ -14,10 +14,6 @@ namespace AspNetCoreMongoApi.Endpoints.WeatherForecasts
         public override void Configure()
         {
             Get("/weather-forecast/{id:guid}");
-            
-            AllowAnonymous();
-
-            Description(x => x.ClearDefaultAccepts());
         }
 
         public override async Task HandleAsync( GetByIdWeatherForecastRequest req, CancellationToken ct)

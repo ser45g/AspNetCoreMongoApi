@@ -4,16 +4,11 @@ using AspNetCoreMongoApi.Options;
 using AspNetCoreMongoApi.Profiles;
 using FastEndpoints;
 using FluentValidation;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using OpenTelemetry.Logs;
-using OpenTelemetry.Metrics;
-using OpenTelemetry.Resources;
-using OpenTelemetry.Trace;
-using Scalar.AspNetCore;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
-
-builder.Services.AddOpenApi();
 
 var mongoDbOptions = builder.Configuration.GetRequiredSection(MongoDbOptions.ConfigurationSection).Get<MongoDbOptions>();
 ArgumentNullException.ThrowIfNull(mongoDbOptions);
@@ -21,7 +16,12 @@ ArgumentNullException.ThrowIfNull(mongoDbOptions);
 var seqOptions = builder.Configuration.GetRequiredSection(SeqOptions.ConfigurationSection).Get<SeqOptions>();
 ArgumentNullException.ThrowIfNull(seqOptions);
 
+var authenticationOptions = builder.Configuration.GetRequiredSection(AuthenticationOptions.ConfigurationSection).Get<AuthenticationOptions>();
+ArgumentNullException.ThrowIfNull(authenticationOptions);
+
 builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"] = seqOptions.OtlpEndpoint;
+
+builder.Services.AddOpenApiWithOIDC(authenticationOptions);
 
 builder.Services.AddDbContext<MongoDbContext>((options) =>
 {
@@ -36,26 +36,18 @@ builder.Services.AddCors(options =>
         policy.AllowAnyMethod().AllowAnyHeader().WithOrigins();
     });
 });
-builder.Services.AddLogging();
 
 builder.Services.AddValidatedApplicationOptions();
 
-builder.Services.AddOpenTelemetry().ConfigureResource(resource =>
-{
-    resource.AddService("WeatherForecast");
-}).WithMetrics(metrics =>
-{
-    metrics.AddAspNetCoreInstrumentation().AddHttpClientInstrumentation();
-
-    metrics.AddOtlpExporter();
-}).WithTracing(tracing =>
-{
-    tracing.AddAspNetCoreInstrumentation().AddHttpClientInstrumentation().AddEntityFrameworkCoreInstrumentation();
-
-    tracing.AddOtlpExporter();
+builder.Services.AddAuthorization();
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options => {
+    options.RequireHttpsMetadata = authenticationOptions.RequireHttps;
+    options.Audience = authenticationOptions.Audience;
+    options.MetadataAddress = authenticationOptions.MetadataAddress;
+    options.TokenValidationParameters = new TokenValidationParameters {
+        ValidIssuer = authenticationOptions.ValidIssuer
+    };
 });
-
-builder.Logging.AddOpenTelemetry(logging => logging.AddOtlpExporter());
 
 builder.Services.AddProblemDetails();
 
@@ -68,7 +60,7 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
-    app.MapScalarApiReference();
+    app.MapOpenScalarReferenceWithOIDC(authenticationOptions);
 }
 
 if (!app.Environment.IsDevelopment())
@@ -84,7 +76,6 @@ app.MapFastEndpoints(c =>
 {
     c.Errors.UseProblemDetails();
 });
-
 
 using var scope = app.Services.CreateScope();
 
