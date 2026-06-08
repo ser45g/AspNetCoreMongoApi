@@ -29,11 +29,15 @@ builder.Services.AddDbContext<MongoDbContext>((options) =>
 });
 builder.Services.AddAutoMapper(typeof(AppMappingProfile));
 
+builder.Services.AddOptions<CorsOptions>().Bind(builder.Configuration.GetSection(CorsOptions.ConfigurationSection));
+
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.AllowAnyMethod().AllowAnyHeader().WithOrigins();
+        string[] allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
+
+        policy.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod().AllowCredentials();
     });
 });
 

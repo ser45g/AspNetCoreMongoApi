@@ -7,6 +7,9 @@ services:
       context: .
       dockerfile: AspNetCoreMongoApi/Dockerfile
     environment:
+
+       - CorsOptions__AllowedOrigins__0=http://localhost:5173
+       - CorsOptions__AllowedOrigins__1=http://localhost:5174
        - "MongoDbOptions__Username=${MONGO_INITDB_ROOT_USERNAME}"
        - "MongoDbOptions__Password=${MONGO_INITDB_ROOT_PASSWORD}"
        - "MongoDbOptions__Url=mongo:27017"
@@ -100,6 +103,4 @@ volumes:
     driver: local  
   seq-data:
     driver: local
-networks:
-  otel:
    
