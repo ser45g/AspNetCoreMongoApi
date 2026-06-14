@@ -7,7 +7,6 @@ services:
       context: .
       dockerfile: AspNetCoreMongoApi/Dockerfile
     environment:
-
        - CorsOptions__AllowedOrigins__0=http://localhost:5173
        - CorsOptions__AllowedOrigins__1=http://localhost:5174
        - "MongoDbOptions__Username=${MONGO_INITDB_ROOT_USERNAME}"
@@ -30,6 +29,9 @@ services:
        - "SeqOptions__Url=seq-dashboard:5341"
        - "OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf"
        - "OTEL_EXPORTER_OTLP_HEADERS=X-Seq-ApiKey=${X_SEQ_API_KEY_HEADER}"
+
+       - "RedisOptions__Configuration=redis:6379,password=redis,abortConnect=false" 
+       - "RedisOptions__Password=${REDIS_PASSWORD}"
   keycloak:
     image: quay.io/keycloak/keycloak:26.5.2
     container_name: keycloak
@@ -82,6 +84,21 @@ services:
       ME_CONFIG_BASICAUTH_ENABLED: true
       ME_CONFIG_BASICAUTH_USERNAME: ${MONGOEXPRESS_USERNAME}
       ME_CONFIG_BASICAUTH_PASSWORD: ${MONGOEXPRESS_PASSWORD}
+  redis:
+    image: redis:7.2-alpine
+    container_name: redis
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis-data:/data
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+  redis-insight:
+    image: redis/redisinsight:latest
+    restart: always
+    ports:
+      - "5540:5540"
+    volumes:
+      - redis-insight:/data
   seq-dashboard:
     image: datalust/seq:2025.2
     volumes:
@@ -96,11 +113,10 @@ services:
       - 8083:80
 volumes:
   postgres-keycloak-data:
-    driver: local
   mongo-data:
-    driver: local  
   mongo-express-data:
-    driver: local  
   seq-data:
-    driver: local
+  redis-data:
+  redis-config:
+  redis-insight:
    

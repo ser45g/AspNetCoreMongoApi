@@ -6,7 +6,11 @@ using FastEndpoints;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.StackExchangeRedis;
 using Microsoft.IdentityModel.Tokens;
+using ZiggyCreatures.Caching.Fusion;
+using ZiggyCreatures.Caching.Fusion.Backplane.StackExchangeRedis;
+using ZiggyCreatures.Caching.Fusion.Serialization.SystemTextJson;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +19,9 @@ ArgumentNullException.ThrowIfNull(mongoDbOptions);
 
 var seqOptions = builder.Configuration.GetRequiredSection(SeqOptions.ConfigurationSection).Get<SeqOptions>();
 ArgumentNullException.ThrowIfNull(seqOptions);
+
+var redisCacheOptions = builder.Configuration.GetRequiredSection(RedisOptions.ConfigurationSection).Get<RedisOptions>();
+ArgumentNullException.ThrowIfNull(redisCacheOptions);
 
 var authenticationOptions = builder.Configuration.GetRequiredSection(AuthenticationOptions.ConfigurationSection).Get<AuthenticationOptions>();
 ArgumentNullException.ThrowIfNull(authenticationOptions);
@@ -29,7 +36,15 @@ builder.Services.AddDbContext<MongoDbContext>((options) =>
 });
 builder.Services.AddAutoMapper(typeof(AppMappingProfile));
 
-builder.Services.AddOptions<CorsOptions>().Bind(builder.Configuration.GetSection(CorsOptions.ConfigurationSection));
+builder.Services.AddFusionCache().WithDefaultEntryOptions(o =>
+{
+    o.Duration = TimeSpan.FromMinutes(5);
+    o.DistributedCacheDuration = TimeSpan.FromMinutes(8);
+}).WithSerializer(new FusionCacheSystemTextJsonSerializer())
+.WithDistributedCache(new RedisCache(new RedisCacheOptions() { Configuration = redisCacheOptions.Configuration }))
+.WithBackplane(new RedisBackplane(new RedisBackplaneOptions() {
+    Configuration = redisCacheOptions.Configuration,
+}));
 
 builder.Services.AddCors(options =>
 {

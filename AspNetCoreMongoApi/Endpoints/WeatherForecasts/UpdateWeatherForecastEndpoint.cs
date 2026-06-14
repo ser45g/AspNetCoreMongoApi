@@ -2,12 +2,15 @@
 using AspNetCoreMongoApi.Contracts.Response;
 using AspNetCoreMongoApi.Data;
 using AspNetCoreMongoApi.Entities;
+using AspNetCoreMongoApi.Helpers;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Hybrid;
+using ZiggyCreatures.Caching.Fusion;
 
 namespace AspNetCoreMongoApi.Endpoints.WeatherForecasts
 {
-    public class UpdateWeatherForecastEndpoint(AutoMapper.IMapper _mapper, MongoDbContext _context) : Endpoint<UpdateWeatherForecastRequest, WeatherForecastResponse>
+    public class UpdateWeatherForecastEndpoint(MongoDbContext context, IFusionCache hybridCache) : Endpoint<UpdateWeatherForecastRequest, WeatherForecastResponse>
     {
         public override void Configure()
         {
@@ -16,9 +19,23 @@ namespace AspNetCoreMongoApi.Endpoints.WeatherForecasts
 
         public override async Task HandleAsync(UpdateWeatherForecastRequest req, CancellationToken ct)
         {
-            var weatherForecast = _mapper.Map<WeatherForecast>(req);
+            await hybridCache.RemoveAsync(CacheKeys.WeatherForecastById(req.Id), token: ct);
 
-            await _context.WeatherForecasts.Where(w => w.Id == req.Id).ExecuteUpdateAsync(w => w.SetProperty(w => w.Date, weatherForecast.Date).SetProperty(w => w.TemperatureC, weatherForecast.TemperatureC).SetProperty(w => w.TemperatureF, weatherForecast.TemperatureF).SetProperty(w => w.Summary, weatherForecast.Summary));
+            var weatherForecast = await context.WeatherForecasts.FirstOrDefaultAsync(w => w.Id == req.Id, cancellationToken: ct);
+
+            if (weatherForecast == null)
+            {
+                await Send.NotFoundAsync(cancellation: ct);
+                return;
+            }   
+
+            weatherForecast.Date = req.Date!.Value;
+            
+            weatherForecast.TemperatureC = req.TemperatureC!.Value;
+
+            weatherForecast.Summary = req.Summary;
+
+            await context.SaveChangesAsync(ct);
 
             await Send.NoContentAsync(ct);
         }

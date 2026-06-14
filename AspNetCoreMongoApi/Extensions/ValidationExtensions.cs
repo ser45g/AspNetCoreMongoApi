@@ -35,7 +35,15 @@ namespace AspNetCoreMongoApi.Extensions
 
             services.AddOptions<WeatherForecastValidationOptions>().BindConfiguration(WeatherForecastValidationOptions.ConfigurationSection);
 
-            
+            services.AddOptions<RedisOptions>().BindConfiguration(RedisOptions.ConfigurationSection).ValidateOnStart().Validate(redisOptions =>
+            {
+                var validator = new RedisOptionsValidator();
+                var validationResult = validator.Validate(redisOptions);
+
+                return validationResult.IsValid;
+            });
+
+            services.AddOptions<CorsOptions>().BindConfiguration(CorsOptions.ConfigurationSection);
 
             return services;
         }

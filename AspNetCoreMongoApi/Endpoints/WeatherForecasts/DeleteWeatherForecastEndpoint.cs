@@ -1,11 +1,14 @@
 ﻿using AspNetCoreMongoApi.Contracts.Request;
 using AspNetCoreMongoApi.Data;
 using AspNetCoreMongoApi.Entities;
+using AspNetCoreMongoApi.Helpers;
 using FastEndpoints;
+using Microsoft.Extensions.Caching.Hybrid;
+using ZiggyCreatures.Caching.Fusion;
 
 namespace AspNetCoreMongoApi.Endpoints.WeatherForecasts
 {
-    public class DeleteWeatherForecastEndpoint(MongoDbContext _context):Endpoint<DeleteWeatherForecastRequest>
+    public class DeleteWeatherForecastEndpoint(MongoDbContext context, IFusionCache hybridCache):Endpoint<DeleteWeatherForecastRequest>
     {
         public override void Configure()
         {
@@ -15,9 +18,11 @@ namespace AspNetCoreMongoApi.Endpoints.WeatherForecasts
 
         public override async Task HandleAsync(DeleteWeatherForecastRequest req, CancellationToken ct)
         {
-            _context.WeatherForecasts.Remove(new WeatherForecast() { Id = req.Id });
+            await hybridCache.RemoveAsync(CacheKeys.WeatherForecastById(req.Id), token:ct);
 
-            await _context.SaveChangesAsync();
+            context.WeatherForecasts.Remove(new WeatherForecast() { Id = req.Id });
+
+            await context.SaveChangesAsync();
 
             await Send.NoContentAsync(ct);
         }
