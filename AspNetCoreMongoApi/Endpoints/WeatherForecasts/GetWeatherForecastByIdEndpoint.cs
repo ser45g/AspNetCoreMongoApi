@@ -1,15 +1,15 @@
 ﻿using AspNetCoreMongoApi.Contracts.WeatherForecasts.Request;
 using AspNetCoreMongoApi.Contracts.WeatherForecasts.Response;
 using AspNetCoreMongoApi.Data;
+using AspNetCoreMongoApi.Extensions.Mappers;
 using AspNetCoreMongoApi.Helpers;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 using ZiggyCreatures.Caching.Fusion;
-using IMapper = AutoMapper.IMapper;
 
 namespace AspNetCoreMongoApi.Endpoints.WeatherForecasts
 {
-    public class GetWeatherForecastByIdEndpoint(IMapper mapper, MongoDbContext context, IFusionCache hybridCache):Endpoint<GetByIdWeatherForecastRequest, WeatherForecastResponse>
+    public class GetWeatherForecastByIdEndpoint(MongoDbContext context, IFusionCache hybridCache):Endpoint<GetByIdWeatherForecastRequest, WeatherForecastResponse>
     {
         public override void Configure()
         {
@@ -25,8 +25,9 @@ namespace AspNetCoreMongoApi.Endpoints.WeatherForecasts
             if (weatherForecast == null)
             {
                 await Send.NotFoundAsync(cancellation: ct);
+                return;
             }
-            var response = mapper.Map<WeatherForecastResponse>(weatherForecast);
+            var response = weatherForecast.ToWeatherForecastResponse();
             await Send.OkAsync(response, ct);
         }
     }

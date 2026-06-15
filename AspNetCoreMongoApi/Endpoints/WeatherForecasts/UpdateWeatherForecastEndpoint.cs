@@ -1,11 +1,9 @@
 ﻿using AspNetCoreMongoApi.Contracts.WeatherForecasts.Request;
 using AspNetCoreMongoApi.Contracts.WeatherForecasts.Response;
 using AspNetCoreMongoApi.Data;
-using AspNetCoreMongoApi.Entities;
 using AspNetCoreMongoApi.Helpers;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Hybrid;
 using ZiggyCreatures.Caching.Fusion;
 
 namespace AspNetCoreMongoApi.Endpoints.WeatherForecasts
@@ -31,9 +29,7 @@ namespace AspNetCoreMongoApi.Endpoints.WeatherForecasts
             }   
 
             weatherForecast.Date = req.Date!.Value;
-            
             weatherForecast.TemperatureC = req.TemperatureC!.Value;
-
             weatherForecast.Summary = req.Summary;
 
             await context.SaveChangesAsync(ct);

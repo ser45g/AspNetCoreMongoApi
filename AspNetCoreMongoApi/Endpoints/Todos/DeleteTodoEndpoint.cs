@@ -1,5 +1,4 @@
 ﻿using AspNetCoreMongoApi.Contracts.Todos.Request;
-using AspNetCoreMongoApi.Contracts.WeatherForecasts.Request;
 using AspNetCoreMongoApi.Data;
 using AspNetCoreMongoApi.Entities;
 using AspNetCoreMongoApi.Helpers;

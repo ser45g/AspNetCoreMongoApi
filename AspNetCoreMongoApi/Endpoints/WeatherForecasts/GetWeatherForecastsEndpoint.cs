@@ -4,6 +4,7 @@ using AspNetCoreMongoApi.Contracts.WeatherForecasts.Response;
 using AspNetCoreMongoApi.Data;
 using AspNetCoreMongoApi.Entities;
 using AspNetCoreMongoApi.Extensions;
+using AspNetCoreMongoApi.Extensions.Mappers;
 using AspNetCoreMongoApi.Helpers;
 using AspNetCoreMongoApi.Options;
 using FastEndpoints;
@@ -13,7 +14,7 @@ using System.Linq.Expressions;
 
 namespace AspNetCoreMongoApi.Endpoints.WeatherForecasts
 {
-    public class GetWeatherForecastsEndpoint(AutoMapper.IMapper mapper, MongoDbContext dbContext, IOptions<PaginationOptions> paginationOptions) : Endpoint<GetCursorWeatherForecastsRequest, CursorPaginationResponse<IEnumerable<WeatherForecastResponse>>>
+    public class GetWeatherForecastsEndpoint(MongoDbContext dbContext, IOptions<PaginationOptions> paginationOptions): Endpoint<GetCursorWeatherForecastsRequest, CursorPaginationResponse<IEnumerable<WeatherForecastResponse>>>
     {
         public override void Configure()
         {
@@ -52,16 +53,16 @@ namespace AspNetCoreMongoApi.Endpoints.WeatherForecasts
                 }
             }
 
-            var weatherForecastDtos = mapper.Map<IEnumerable<WeatherForecastResponse>>(weatherForecasts);
+            var weatherForecastDtos = weatherForecasts.Select(w => w.ToWeatherForecastResponse());
 
             var response = new CursorPaginationResponse<IEnumerable<WeatherForecastResponse>>(cursor, weatherForecastDtos, weatherForecasts.Count, totalCount);
 
             await Send.OkAsync(response, ct);
         }
 
-        private Expression<Func<WeatherForecast, object>> GetKeySelector(string? sortColumn=null)
+        private Expression<Func<WeatherForecast, object?>> GetKeySelector(string? sortColumn=null)
         {
-            Expression<Func<WeatherForecast, object>> keySelector = sortColumn?.ToLower() switch
+            Expression<Func<WeatherForecast, object?>> keySelector = sortColumn?.ToLower() switch
             {
                 "temperaturec" => w => w.TemperatureC,
                 "date" => w => w.Date,

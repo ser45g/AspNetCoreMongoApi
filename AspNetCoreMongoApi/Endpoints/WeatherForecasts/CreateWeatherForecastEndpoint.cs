@@ -1,15 +1,14 @@
 ﻿using AspNetCoreMongoApi.Contracts.WeatherForecasts.Request;
 using AspNetCoreMongoApi.Contracts.WeatherForecasts.Response;
 using AspNetCoreMongoApi.Data;
-using AspNetCoreMongoApi.Entities;
+using AspNetCoreMongoApi.Extensions.Mappers;
 using AspNetCoreMongoApi.Helpers;
 using FastEndpoints;
-using IMapper = AutoMapper.IMapper;
 
 namespace AspNetCoreMongoApi.Endpoints.WeatherForecasts
 {
     
-    public class CreateWeatherForecastEndpoint(IMapper mapper, MongoDbContext context):Endpoint<CreateWeatherForecastRequest, WeatherForecastResponse>
+    public class CreateWeatherForecastEndpoint(MongoDbContext context):Endpoint<CreateWeatherForecastRequest, WeatherForecastResponse>
     {
         public override void Configure()
         {
@@ -19,13 +18,13 @@ namespace AspNetCoreMongoApi.Endpoints.WeatherForecasts
 
         public override async Task HandleAsync(CreateWeatherForecastRequest req, CancellationToken ct)
         {
-            var weatherForecast = mapper.Map<WeatherForecast>(req);
+            var weatherForecast = req.ToWeatherForecast();
 
             context.WeatherForecasts.Add(weatherForecast);
 
             await context.SaveChangesAsync();
 
-            var response = mapper.Map<WeatherForecastResponse>(weatherForecast);
+            var response = weatherForecast.ToWeatherForecastResponse();
 
             await Send.CreatedAtAsync<GetWeatherForecastByIdEndpoint>(new { id = response.Id }, response, cancellation: ct);
         }

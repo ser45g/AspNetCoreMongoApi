@@ -1,7 +1,6 @@
 using AspNetCoreMongoApi.Data;
 using AspNetCoreMongoApi.Extensions;
 using AspNetCoreMongoApi.Options;
-using AspNetCoreMongoApi.Profiles;
 using FastEndpoints;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -34,7 +33,6 @@ builder.Services.AddDbContext<MongoDbContext>((options) =>
 {
     options.UseMongoDB(mongoDbOptions.ConnectionString);
 });
-builder.Services.AddAutoMapper(typeof(WeatherForecastProfile));
 
 builder.Services.AddFusionCache().WithDefaultEntryOptions(o =>
 {
@@ -66,10 +64,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
         ValidIssuer = authenticationOptions.ValidIssuer
     };
 });
-builder.Services.AddAuthorization(o =>
-{
-    o.AddPolicy("Admin", policy => policy.RequireRole("admin"));
-});
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy("Admin", policy => policy.RequireRole("admin"));
 
 builder.Services.AddProblemDetails();
 

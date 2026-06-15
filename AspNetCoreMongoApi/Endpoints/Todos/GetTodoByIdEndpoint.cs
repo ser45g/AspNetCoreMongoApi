@@ -1,8 +1,7 @@
 ﻿using AspNetCoreMongoApi.Contracts.Todos.Request;
 using AspNetCoreMongoApi.Contracts.Todos.Response;
-using AspNetCoreMongoApi.Contracts.WeatherForecasts.Request;
-using AspNetCoreMongoApi.Contracts.WeatherForecasts.Response;
 using AspNetCoreMongoApi.Data;
+using AspNetCoreMongoApi.Extensions.Mappers;
 using AspNetCoreMongoApi.Helpers;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
@@ -11,7 +10,7 @@ using ZiggyCreatures.Caching.Fusion;
 namespace AspNetCoreMongoApi.Endpoints.Todos
 {
    
-    public class GetTodoByIdEndpoint(AutoMapper.IMapper mapper, MongoDbContext context, IFusionCache hybridCache) : Endpoint<GetByIdTodoRequest, TodoResponse>
+    public class GetTodoByIdEndpoint(MongoDbContext context, IFusionCache hybridCache) : Endpoint<GetByIdTodoRequest, TodoResponse>
     {
         public override void Configure()
         {
@@ -27,8 +26,10 @@ namespace AspNetCoreMongoApi.Endpoints.Todos
             if (todo == null)
             {
                 await Send.NotFoundAsync(cancellation: ct);
+                return;
             }
-            var response = mapper.Map<TodoResponse>(todo);
+            TodoResponse response = todo.ToTodoResponse();
+
             await Send.OkAsync(response, ct);
         }
     }

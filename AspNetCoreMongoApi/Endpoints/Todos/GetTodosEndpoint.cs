@@ -1,10 +1,10 @@
 ﻿using AspNetCoreMongoApi.Contracts.Common.Response;
 using AspNetCoreMongoApi.Contracts.Todos.Request;
-using AspNetCoreMongoApi.Contracts.WeatherForecasts.Request;
-using AspNetCoreMongoApi.Contracts.WeatherForecasts.Response;
+using AspNetCoreMongoApi.Contracts.Todos.Response;
 using AspNetCoreMongoApi.Data;
 using AspNetCoreMongoApi.Entities;
 using AspNetCoreMongoApi.Extensions;
+using AspNetCoreMongoApi.Extensions.Mappers;
 using AspNetCoreMongoApi.Helpers;
 using AspNetCoreMongoApi.Options;
 using FastEndpoints;
@@ -15,7 +15,7 @@ using System.Linq.Expressions;
 namespace AspNetCoreMongoApi.Endpoints.Todos
 {
 
-    public class GetTodosEndpoint(AutoMapper.IMapper mapper, MongoDbContext dbContext, IOptions<PaginationOptions> paginationOptions) : Endpoint<GetTodosRequest, CursorPaginationResponse<IEnumerable<Todo>>>
+    public class GetTodosEndpoint(MongoDbContext dbContext, IOptions<PaginationOptions> paginationOptions) : Endpoint<GetTodosRequest, CursorPaginationResponse<IEnumerable<TodoResponse>>>
     {
         public override void Configure()
         {
@@ -54,9 +54,9 @@ namespace AspNetCoreMongoApi.Endpoints.Todos
                 }
             }
 
-            var todosResponse = mapper.Map<IEnumerable<Todo>>(todos);
+            var todosResponse = todos.Select(todo => todo.ToTodoResponse());
 
-            var response = new CursorPaginationResponse<IEnumerable<Todo>>(cursor, todosResponse, todos.Count, totalCount);
+            var response = new CursorPaginationResponse<IEnumerable<TodoResponse>>(cursor, todosResponse, todos.Count, totalCount);
 
             await Send.OkAsync(response, ct);
         }
