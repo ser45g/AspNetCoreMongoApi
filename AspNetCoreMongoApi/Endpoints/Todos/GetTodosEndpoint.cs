@@ -54,7 +54,7 @@ namespace AspNetCoreMongoApi.Endpoints.Todos
                 }
             }
 
-            var todosResponse = todos.Select(todo => todo.ToTodoResponse());
+            var todosResponse = todos.Select(t => t.ToTodoResponse()).ToList();
 
             var response = new CursorPaginationResponse<IEnumerable<TodoResponse>>(cursor, todosResponse, todos.Count, totalCount);
 

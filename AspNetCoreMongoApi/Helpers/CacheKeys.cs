@@ -4,9 +4,6 @@
     {
         public static string WeatherForecastById(Guid id) => $"weather-forecast-{id}";
 
-        internal static string TodoById(object id)
-        {
-            throw new NotImplementedException();
-        }
+        public static string TodoById(Guid id) => $"todo-{id}";
     }
 }
