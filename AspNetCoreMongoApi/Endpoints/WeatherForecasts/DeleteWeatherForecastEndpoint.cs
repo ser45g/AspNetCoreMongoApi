@@ -1,4 +1,4 @@
-﻿using AspNetCoreMongoApi.Contracts.Request;
+﻿using AspNetCoreMongoApi.Contracts.WeatherForecasts.Request;
 using AspNetCoreMongoApi.Data;
 using AspNetCoreMongoApi.Entities;
 using AspNetCoreMongoApi.Helpers;
@@ -12,8 +12,9 @@ namespace AspNetCoreMongoApi.Endpoints.WeatherForecasts
     {
         public override void Configure()
         {
-            Delete("/weather-forecast/{id:guid}");
+            Delete(EndpointRoutes.WeatherForecast+"/{id:guid}");
             Description(x => x.ClearDefaultAccepts());
+            Policies("Admin");
         }
 
         public override async Task HandleAsync(DeleteWeatherForecastRequest req, CancellationToken ct)

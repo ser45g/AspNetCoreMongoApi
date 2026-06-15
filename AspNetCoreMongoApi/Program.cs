@@ -34,7 +34,7 @@ builder.Services.AddDbContext<MongoDbContext>((options) =>
 {
     options.UseMongoDB(mongoDbOptions.ConnectionString);
 });
-builder.Services.AddAutoMapper(typeof(AppMappingProfile));
+builder.Services.AddAutoMapper(typeof(WeatherForecastProfile));
 
 builder.Services.AddFusionCache().WithDefaultEntryOptions(o =>
 {
@@ -58,7 +58,6 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddValidatedApplicationOptions();
 
-builder.Services.AddAuthorization();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options => {
     options.RequireHttpsMetadata = authenticationOptions.RequireHttps;
     options.Audience = authenticationOptions.Audience;
@@ -66,6 +65,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
     options.TokenValidationParameters = new TokenValidationParameters {
         ValidIssuer = authenticationOptions.ValidIssuer
     };
+});
+builder.Services.AddAuthorization(o =>
+{
+    o.AddPolicy("Admin", policy => policy.RequireRole("admin"));
 });
 
 builder.Services.AddProblemDetails();

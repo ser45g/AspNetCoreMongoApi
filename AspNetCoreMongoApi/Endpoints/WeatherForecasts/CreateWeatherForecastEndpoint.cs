@@ -1,7 +1,8 @@
-﻿using AspNetCoreMongoApi.Contracts.Request;
-using AspNetCoreMongoApi.Contracts.Response;
+﻿using AspNetCoreMongoApi.Contracts.WeatherForecasts.Request;
+using AspNetCoreMongoApi.Contracts.WeatherForecasts.Response;
 using AspNetCoreMongoApi.Data;
 using AspNetCoreMongoApi.Entities;
+using AspNetCoreMongoApi.Helpers;
 using FastEndpoints;
 using IMapper = AutoMapper.IMapper;
 
@@ -12,7 +13,8 @@ namespace AspNetCoreMongoApi.Endpoints.WeatherForecasts
     {
         public override void Configure()
         {
-            Post("/weather-forecast");
+            Post(EndpointRoutes.WeatherForecast);
+            Policies("Admin");
         }
 
         public override async Task HandleAsync(CreateWeatherForecastRequest req, CancellationToken ct)

@@ -1,13 +1,13 @@
-﻿using AspNetCoreMongoApi.Contracts.Request;
-using AspNetCoreMongoApi.Contracts.Response;
+﻿using AspNetCoreMongoApi.Contracts.WeatherForecasts.Request;
+using AspNetCoreMongoApi.Contracts.WeatherForecasts.Response;
 using AspNetCoreMongoApi.Entities;
 using AutoMapper;
 
 namespace AspNetCoreMongoApi.Profiles
 {
-    public class AppMappingProfile : Profile
+    public class WeatherForecastProfile : Profile
     {
-        public AppMappingProfile()
+        public WeatherForecastProfile()
         {
             CreateMap<WeatherForecast, WeatherForecastResponse>();
 

@@ -2,7 +2,7 @@
 
 namespace AspNetCoreMongoApi.Extensions
 {
-    public static class QueryableFilteringExtensions
+    public static class WeatherForecastFilteringExtensions
     {
         //IQueryable is immutable - methods like Where() don't modify the original query. They return a new IQueryable with the filter applied.
         public static IQueryable<WeatherForecast> AddFilters(this IQueryable<WeatherForecast> weatherForecastsQuery, DateOnly? minDate = null, DateOnly? maxDate = null, int? minTemperatureC = null, int? maxTemperatureC = null, string? summarySearchTerm = null)

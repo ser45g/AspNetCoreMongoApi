@@ -1,12 +1,9 @@
-﻿using AspNetCoreMongoApi.Contracts.Request;
-using AspNetCoreMongoApi.Contracts.Response;
+﻿using AspNetCoreMongoApi.Contracts.WeatherForecasts.Request;
+using AspNetCoreMongoApi.Contracts.WeatherForecasts.Response;
 using AspNetCoreMongoApi.Data;
 using AspNetCoreMongoApi.Helpers;
-using AutoMapper;
 using FastEndpoints;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Hybrid;
 using ZiggyCreatures.Caching.Fusion;
 using IMapper = AutoMapper.IMapper;
 
@@ -16,7 +13,7 @@ namespace AspNetCoreMongoApi.Endpoints.WeatherForecasts
     {
         public override void Configure()
         {
-            Get("/weather-forecast/{id:guid}");
+            Get(EndpointRoutes.WeatherForecast+ "/{id:guid}");
         }
 
         public override async Task HandleAsync(GetByIdWeatherForecastRequest req, CancellationToken ct)

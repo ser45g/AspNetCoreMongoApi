@@ -35,4 +35,8 @@
     <PackageReference Include="ZiggyCreatures.FusionCache.Serialization.SystemTextJson" Version="2.6.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Contracts\Common\Request\" />
+  </ItemGroup>
+
 </Project>
