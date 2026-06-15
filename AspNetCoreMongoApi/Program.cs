@@ -64,8 +64,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
         ValidIssuer = authenticationOptions.ValidIssuer
     };
 });
-builder.Services.AddAuthorizationBuilder()
-    .AddPolicy("Admin", policy => policy.RequireRole("admin"));
+builder.Services.AddAuthorization(o =>
+{
+    o.AddPolicy("Admin", policy => policy.RequireRole("admin"));
+});
 
 builder.Services.AddProblemDetails();
 
