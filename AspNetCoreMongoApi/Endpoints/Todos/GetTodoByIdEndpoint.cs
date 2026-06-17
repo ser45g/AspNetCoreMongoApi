@@ -10,7 +10,7 @@ using ZiggyCreatures.Caching.Fusion;
 namespace AspNetCoreMongoApi.Endpoints.Todos
 {
    
-    public class GetTodoByIdEndpoint(MongoDbContext context, IFusionCache hybridCache) : Endpoint<GetByIdTodoRequest, TodoResponse>
+    public class GetTodoByIdEndpoint(AppDbContext context, IFusionCache hybridCache) : Endpoint<GetByIdTodoRequest, TodoResponse>
     {
         public override void Configure()
         {

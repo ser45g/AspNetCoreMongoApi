@@ -13,6 +13,8 @@
         DateTime? MinUpdatedAt = null,
         DateTime? MaxUpdatedAt = null,
 
+        bool? IsComplete=null,
+
         string? SearchTerm = null,
 
         string? SortColumn = null,

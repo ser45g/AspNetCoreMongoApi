@@ -8,7 +8,7 @@ using FastEndpoints;
 namespace AspNetCoreMongoApi.Endpoints.WeatherForecasts
 {
     
-    public class CreateWeatherForecastEndpoint(MongoDbContext context):Endpoint<CreateWeatherForecastRequest, WeatherForecastResponse>
+    public class CreateWeatherForecastEndpoint(AppDbContext context):Endpoint<CreateWeatherForecastRequest, WeatherForecastResponse>
     {
         public override void Configure()
         {

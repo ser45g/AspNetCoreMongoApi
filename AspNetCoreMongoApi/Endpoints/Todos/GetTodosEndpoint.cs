@@ -7,6 +7,8 @@ using AspNetCoreMongoApi.Extensions;
 using AspNetCoreMongoApi.Extensions.Mappers;
 using AspNetCoreMongoApi.Helpers;
 using AspNetCoreMongoApi.Options;
+using Elastic.Clients.Elasticsearch;
+using Elastic.Clients.Elasticsearch.QueryDsl;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -15,7 +17,7 @@ using System.Linq.Expressions;
 namespace AspNetCoreMongoApi.Endpoints.Todos
 {
 
-    public class GetTodosEndpoint(MongoDbContext dbContext, IOptions<PaginationOptions> paginationOptions) : Endpoint<GetTodosRequest, CursorPaginationResponse<IEnumerable<TodoResponse>>>
+    public class GetTodosEndpoint(ElasticsearchClient elasticsearchClient, IOptions<PaginationOptions> paginationOptions) : Endpoint<GetTodosRequest, CursorPaginationResponse<IEnumerable<TodoResponse>>>
     {
         public override void Configure()
         {
@@ -24,39 +26,52 @@ namespace AspNetCoreMongoApi.Endpoints.Todos
 
         public override async Task HandleAsync(GetTodosRequest request, CancellationToken ct)
         {
-            var startWith = request.Cursor ?? Guid.Empty;
+
             var pageSize = request.PageSize ?? paginationOptions.Value.DefaultPageSize;
 
-            IQueryable<Todo> todosQuery = dbContext.Todos.AsNoTracking();
+            //var searchTodosResponse = await elasticsearchClient.SearchAsync<Todo>(t =>BuildQuery(t.Indices("todos"), request, pageSize));
 
-            todosQuery = todosQuery.Where(w => w.Id >= startWith);
+            var query = (SearchRequestDescriptor<Todo> t) =>
+            {
+                t.Indices("todos").Query(q => 
+                    q.Bool(b => 
+                       BuildSearchQuery(b, request)
+                    )).Size(pageSize+1)
+                    .Sort(s => s.Field(GetKeySelector(request.SortColumn), request.SortAsc == false ? SortOrder.Desc : SortOrder.Asc));
 
-            todosQuery = todosQuery.AddFilters(request.MinTo, request.MaxTo, request.MinFrom, request.MaxFrom, request.MinCreatedAt, request.MaxCreatedAt, request.MinUpdatedAt, request.MaxUpdatedAt, request.SearchTerm);
+                if (request.Cursor.HasValue)
+                {
+                    t=t.SearchAfter(new FieldValue[] { FieldValue.String(request.Cursor.ToString()!) });
+                }
+            };
 
-            var keySelector = GetKeySelector(request.SortColumn);
+            var searchTodosResponse = await elasticsearchClient.SearchAsync<Todo>(query);
 
-            todosQuery = request.SortAsc == true ? todosQuery.OrderBy(keySelector) : todosQuery.OrderByDescending(keySelector);
+            if (searchTodosResponse.IsValidResponse == false)
+            {
+                await Send.ErrorsAsync(cancellation: ct);
+                return;
+            }
 
-            int totalCount = await todosQuery.CountAsync();
+            var todos = searchTodosResponse.Documents;
+            var total = searchTodosResponse.Total;
 
-            var todos = await todosQuery.Take(pageSize + 1).ToListAsync(ct);
+            var todoResponses = todos.Select(t => t.ToTodoResponse()).ToList();
 
             Guid? cursor = null;
 
-            if (todos.Count == pageSize + 1)
+            if (todoResponses.Count == pageSize + 1)
             {
-                var last = todos.LastOrDefault();
+                var last = todoResponses.LastOrDefault();
 
                 if (last != null)
                 {
                     cursor = last.Id;
-                    todos.Remove(last);
+                    todoResponses.Remove(last);
                 }
             }
 
-            var todosResponse = todos.Select(t => t.ToTodoResponse()).ToList();
-
-            var response = new CursorPaginationResponse<IEnumerable<TodoResponse>>(cursor, todosResponse, todos.Count, totalCount);
+            var response = new CursorPaginationResponse<IEnumerable<TodoResponse>>(cursor, todoResponses, todoResponses.Count, (int)total);
 
             await Send.OkAsync(response, ct);
         }
@@ -65,15 +80,77 @@ namespace AspNetCoreMongoApi.Endpoints.Todos
         {
             Expression<Func<Todo, object?>> keySelector = sortColumn?.ToLower() switch
             {
-                "title" => w => w.Title,
-                "isComplete" => w => w.IsComplete,
+                "iscomplete" => w => w.IsComplete,
                 "to" => w => w.To,
                 "from" => w => w.From,
-                "createdAt" => w => w.CreatedAt,
-                "updatedAt" => w => w.UpdatedAt,
+                "createdat" => w => w.CreatedAt,
+                "updatedat" => w => w.UpdatedAt,
                 _ => w => w.Id
             };
             return keySelector;
+        }
+
+        private BoolQueryDescriptor<Todo> BuildSearchQuery(BoolQueryDescriptor<Todo> boolQuery, GetTodosRequest request)
+        {
+            boolQuery.Must(m => m.MatchAll());
+
+            if (!string.IsNullOrEmpty(request.SearchTerm))
+            {
+                boolQuery = boolQuery.Should(
+                    sh => sh.Match(f => f
+                        .Field(t => t.Title)
+                        .Query(request.SearchTerm)
+                        .Fuzziness(new Fuzziness("2"))),
+                    sh => sh.Match(f => f
+                        .Field(t => t.Description)
+                        .Query(request.SearchTerm)
+                        .Fuzziness(new Fuzziness("2")))
+                );
+                boolQuery = boolQuery.MinimumShouldMatch(1);
+            }
+
+            if (request.IsComplete.HasValue)
+            {
+                boolQuery = boolQuery.Filter(f => f.Term(t => t.Field(ff => ff.IsComplete).Value(request.IsComplete.Value)));
+            }
+
+            if (request.MinFrom!=null)
+            {
+                boolQuery = boolQuery.Filter(f => f.Range(r => r.Date(d=>d.Field(t => t.From).Gte(request.MinFrom))));
+            }
+            if (request.MaxFrom != null)
+            {
+                boolQuery = boolQuery.Filter(f => f.Range(r => r.Date(d => d.Field(t => t.From).Lte(request.MaxFrom))));
+            }
+
+            if (request.MinTo != null)
+            {
+                boolQuery = boolQuery.Filter(f => f.Range(r => r.Date(d => d.Field(t => t.To).Gte(request.MinTo))));
+            }
+            if (request.MaxTo != null)
+            {
+                boolQuery = boolQuery.Filter(f => f.Range(r => r.Date(d => d.Field(t => t.To).Lte(request.MaxTo))));
+            }
+
+            if (request.MinCreatedAt != null)
+            {
+                boolQuery = boolQuery.Filter(f => f.Range(r => r.Date(d => d.Field(t => t.CreatedAt).Gte(request.MinCreatedAt))));
+            }
+            if (request.MaxCreatedAt != null)
+            {
+                boolQuery = boolQuery.Filter(f => f.Range(r => r.Date(d => d.Field(t => t.CreatedAt).Lte(request.MaxCreatedAt))));
+            }
+
+            if (request.MinUpdatedAt != null)
+            {
+                boolQuery = boolQuery.Filter(f => f.Range(r => r.Date(d => d.Field(t => t.UpdatedAt).Gte(request.MinUpdatedAt))));
+            }
+            if (request.MaxUpdatedAt != null)
+            {
+                boolQuery = boolQuery.Filter(f => f.Range(r => r.Date(d => d.Field(t => t.UpdatedAt).Lte(request.MaxUpdatedAt))));
+            }
+
+            return boolQuery;
         }
 
     }

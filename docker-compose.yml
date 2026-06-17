@@ -10,10 +10,8 @@ services:
        - CorsOptions__AllowedOrigins__0=http://localhost:5173
        - CorsOptions__AllowedOrigins__1=http://localhost:5174
 
-       - "MongoDbOptions__Username=${MONGO_INITDB_ROOT_USERNAME}"
-       - "MongoDbOptions__Password=${MONGO_INITDB_ROOT_PASSWORD}"
-       - "MongoDbOptions__Url=mongo:27017"
-
+       - "DbOptions__ConnectionString=User Id=postgres;Password=pwd;Server=db;Port=5432;Database=db"
+      
        - "AuthenticationOptions__MetadataAddress=http://keycloak:8080/realms/auth_demo/.well-known/openid-configuration"
        - "AuthenticationOptions__ValidIssuer=http://localhost:8080/realms/auth_demo"
        - "AuthenticationOptions__AuthorizationUrl=http://localhost:8080/realms/auth_demo/protocol/openid-connect/auth"
@@ -33,13 +31,18 @@ services:
 
        - "RedisOptions__Configuration=redis:6379,password=${REDIS_PASSWORD},abortConnect=false" 
        - "RedisOptions__Password=${REDIS_PASSWORD}"
+
+       - "ElasticSearchOptions__Url=http://elasticsearch:9200"
+       - "ElasticSearchOptions__LocalUsername=elasticsearch"
+       - "ElasticSearchOptions__LocalPassword=elasticsearch"
+       - "ElasticSearchOptions__IsSslUsed=false"
   
   keycloak:
     image: quay.io/keycloak/keycloak:26.5.2
     container_name: keycloak
-    command: start-dev
+    command: start-dev --import-realm
     volumes:
-      - ./keycloak-imports:/opt/jboss/keycloak/imports
+    - ./keycloak-imports:/opt/keycloak/data/import:ro
     environment:
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
@@ -63,30 +66,15 @@ services:
     volumes:
       - postgres-keycloak-data:/var/lib/postgresql
 
-  mongo:
-    image: mongo:8.2.7
-    restart: always
-    ports:
-      - 27017:27017
-    volumes:
-      - mongo-data:/data/db
+  db:
+    container_name: db
+    image: postgres:19beta1
     environment:
-      MONGO_INITDB_DATABASE: ${MONGO_INITDB_ROOT_NAME}
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
-
-  mongo-express:
-    image: mongo-express:1.0.2-20-alpine3.19
-    restart: always
+      POSTGRES-DB: db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: pwd
     volumes:
-      - mongo-express-data:/data/db
-    ports:
-      - 8082:8081
-    environment:
-      ME_CONFIG_MONGODB_URL: mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@mongo:27017
-      ME_CONFIG_BASICAUTH_ENABLED: true
-      ME_CONFIG_BASICAUTH_USERNAME: ${MONGOEXPRESS_USERNAME}
-      ME_CONFIG_BASICAUTH_PASSWORD: ${MONGOEXPRESS_PASSWORD}
+      - postgres-db-data:/var/lib/postgresql
 
   redis:
     image: redis:7.2-alpine
@@ -117,13 +105,34 @@ services:
     ports:
       - 5341:5341
       - 8083:80
+  elasticsearch:
+    image: elasticsearch:9.4.2
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false  # Disable auth for local dev
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+  kibana:
+    image: kibana:9.4.2
+    ports:
+      - 5601:5601
+    depends_on:
+      - elasticsearch
+    environment:
+      ELASTICSEARCH_URL: elasticsearch:9200
 
 volumes:
   postgres-keycloak-data:
-  mongo-data:
+  mongodb1-data:
+  mongodb2-data:
+  mongodb3-data:
   mongo-express-data:
   seq-data:
   redis-data:
   redis-config:
   redis-insight:
+  elasticsearch-data:
+  postgres-db-data:
    

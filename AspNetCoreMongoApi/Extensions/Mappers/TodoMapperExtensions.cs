@@ -13,7 +13,7 @@ namespace AspNetCoreMongoApi.Extensions.Mappers
 
         public static Todo ToTodo(this CreateTodoRequest todo)
         {
-            return new Todo() { Title = todo.Title, CreatedAt = DateTime.UtcNow,UpdatedAt = null, Description = todo.Description, From=todo.From, To=todo.To, IsComplete = todo.IsComplete};
+            return new Todo() { Title = todo.Title, CreatedAt = DateTime.UtcNow,UpdatedAt = null, Description = todo.Description, From=new DateTime(todo.From!.Value.Ticks, DateTimeKind.Utc), To= new DateTime(todo.To!.Value.Ticks, DateTimeKind.Utc), IsComplete = todo.IsComplete};
         }
     }
 }

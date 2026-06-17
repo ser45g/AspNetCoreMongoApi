@@ -2,13 +2,15 @@
 using AspNetCoreMongoApi.Data;
 using AspNetCoreMongoApi.Entities;
 using AspNetCoreMongoApi.Helpers;
+using Elastic.Clients.Elasticsearch;
 using FastEndpoints;
+using Microsoft.EntityFrameworkCore;
 using ZiggyCreatures.Caching.Fusion;
 
 namespace AspNetCoreMongoApi.Endpoints.Todos
 {
    
-    public class DeleteTodoEndpoint(MongoDbContext context, IFusionCache hybridCache) : Endpoint<DeleteTodoRequest>
+    public class DeleteTodoEndpoint(AppDbContext context, ElasticsearchClient elasticsearchClient, IFusionCache hybridCache) : Endpoint<DeleteTodoRequest>
     {
         public override void Configure()
         {
@@ -18,13 +20,40 @@ namespace AspNetCoreMongoApi.Endpoints.Todos
 
         public override async Task HandleAsync(DeleteTodoRequest req, CancellationToken ct)
         {
-            await hybridCache.RemoveAsync(CacheKeys.TodoById(req.Id), token: ct);
+            var todo = await context.Todos.FirstOrDefaultAsync(t=>t.Id==req.Id);
 
-            context.Todos.Remove(new Todo() { Id = req.Id,Title="",CreatedAt=DateTime.MinValue });
+            if (todo == null) {
+                await Send.NotFoundAsync(ct);
+                return;
+            }
 
-            await context.SaveChangesAsync();
+            context.Todos.Remove(todo);
 
-            await Send.NoContentAsync(ct);
+            await using var trans = await context.Database.BeginTransactionAsync(ct);
+
+            try
+            {
+                await context.SaveChangesAsync(ct);
+
+                var elasticSearchResponse = await elasticsearchClient.DeleteAsync<Todo>(req.Id, x => x.Index("todos"), cancellationToken: ct);
+
+                if (elasticSearchResponse.IsValidResponse)
+                {
+                    await trans.CommitAsync(ct);
+
+                    await hybridCache.RemoveAsync(CacheKeys.TodoById(req.Id), token: ct);
+
+                    await Send.NoContentAsync(ct);
+                    return;
+                }
+                await trans.RollbackAsync(ct);
+            }
+            catch(Exception ex) 
+            {
+                await trans.RollbackAsync(ct);
+            }
+
+            await Send.ResultAsync(Results.InternalServerError());
         }
     }
 }

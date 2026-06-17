@@ -7,9 +7,9 @@ namespace AspNetCoreMongoApi.Extensions
     {
         public static IServiceCollection AddValidatedApplicationOptions(this IServiceCollection services) {
 
-            services.AddOptions<MongoDbOptions>().BindConfiguration(MongoDbOptions.ConfigurationSection).ValidateOnStart().Validate(mongoDbOptions =>
+            services.AddOptions<DbOptions>().BindConfiguration(DbOptions.ConfigurationSection).ValidateOnStart().Validate(mongoDbOptions =>
             {
-                var validator = new MongoDbOptionsValidator();
+                var validator = new DbOptionsValidator();
                 var validationResult = validator.Validate(mongoDbOptions);
 
                 return validationResult.IsValid;
@@ -39,6 +39,15 @@ namespace AspNetCoreMongoApi.Extensions
             {
                 var validator = new RedisOptionsValidator();
                 var validationResult = validator.Validate(redisOptions);
+
+                return validationResult.IsValid;
+            });
+
+            services.AddOptions<
+                ElasticSearchOptions>().BindConfiguration(ElasticSearchOptions.ConfigurationSection).ValidateOnStart().Validate(elasticSearchOptions =>
+            {
+                var validator = new ElasticSearchOptionsValidator();
+                var validationResult = validator.Validate(elasticSearchOptions);
 
                 return validationResult.IsValid;
             });

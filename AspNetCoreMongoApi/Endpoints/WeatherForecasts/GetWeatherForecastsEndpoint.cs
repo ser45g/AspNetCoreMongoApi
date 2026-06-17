@@ -14,7 +14,7 @@ using System.Linq.Expressions;
 
 namespace AspNetCoreMongoApi.Endpoints.WeatherForecasts
 {
-    public class GetWeatherForecastsEndpoint(MongoDbContext dbContext, IOptions<PaginationOptions> paginationOptions): Endpoint<GetCursorWeatherForecastsRequest, CursorPaginationResponse<IEnumerable<WeatherForecastResponse>>>
+    public class GetWeatherForecastsEndpoint(AppDbContext dbContext, IOptions<PaginationOptions> paginationOptions): Endpoint<GetCursorWeatherForecastsRequest, CursorPaginationResponse<IEnumerable<WeatherForecastResponse>>>
     {
         public override void Configure()
         {

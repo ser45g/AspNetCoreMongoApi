@@ -1,6 +1,8 @@
 using AspNetCoreMongoApi.Data;
+using AspNetCoreMongoApi.Entities;
 using AspNetCoreMongoApi.Extensions;
 using AspNetCoreMongoApi.Options;
+using Elastic.Clients.Elasticsearch;
 using FastEndpoints;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -13,8 +15,8 @@ using ZiggyCreatures.Caching.Fusion.Serialization.SystemTextJson;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var mongoDbOptions = builder.Configuration.GetRequiredSection(MongoDbOptions.ConfigurationSection).Get<MongoDbOptions>();
-ArgumentNullException.ThrowIfNull(mongoDbOptions);
+var dbOptions = builder.Configuration.GetRequiredSection(DbOptions.ConfigurationSection).Get<DbOptions>();
+ArgumentNullException.ThrowIfNull(dbOptions);
 
 var seqOptions = builder.Configuration.GetRequiredSection(SeqOptions.ConfigurationSection).Get<SeqOptions>();
 ArgumentNullException.ThrowIfNull(seqOptions);
@@ -25,14 +27,19 @@ ArgumentNullException.ThrowIfNull(redisCacheOptions);
 var authenticationOptions = builder.Configuration.GetRequiredSection(AuthenticationOptions.ConfigurationSection).Get<AuthenticationOptions>();
 ArgumentNullException.ThrowIfNull(authenticationOptions);
 
+var elasticSearchOptions= builder.Configuration.GetRequiredSection(ElasticSearchOptions.ConfigurationSection).Get<ElasticSearchOptions>();
+ArgumentNullException.ThrowIfNull(elasticSearchOptions);
+
 builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"] = seqOptions.OtlpEndpoint;
 
 builder.Services.AddOpenApiWithOIDC(authenticationOptions);
 
-builder.Services.AddDbContext<MongoDbContext>((options) =>
+builder.Services.AddDbContext<AppDbContext>((options) =>
 {
-    options.UseMongoDB(mongoDbOptions.ConnectionString);
+    options.UseNpgsql(dbOptions.ConnectionString);
 });
+
+builder.Services.AddElasticSearchClient(elasticSearchOptions);
 
 builder.Services.AddFusionCache().WithDefaultEntryOptions(o =>
 {
@@ -99,9 +106,36 @@ app.MapFastEndpoints(c =>
 
 using var scope = app.Services.CreateScope();
 
-using (var context = scope.ServiceProvider.GetRequiredService<MongoDbContext>())
+using (var context = scope.ServiceProvider.GetRequiredService<AppDbContext>())
 {
     context.Database.EnsureCreated();
+}
+
+var elasticsearchClient = scope.ServiceProvider.GetRequiredService<ElasticsearchClient>();
+
+var elasticsearchExistsResponse = await elasticsearchClient.Indices.ExistsAsync("todos");
+
+if (!elasticsearchExistsResponse.IsValidResponse)
+    throw new Exception("Elastic Search index \"todos\" request was unsuccessful.");
+
+if (!elasticsearchExistsResponse.Exists)
+{
+    var createIndexResponse = await elasticsearchClient.Indices.CreateAsync<Todo>("todos", c => c
+        .Mappings(m => m
+            .Properties(p => p
+                .Text(t=>t.Title)
+                .Text(t=> t.Description)
+                .Keyword(t=>t.Id)
+                .Boolean(t=>t.IsComplete)
+                .Date(t=> t.CreatedAt)
+                .Date(t=> t.UpdatedAt)
+                .Date(t => t.From)
+                .Date(t => t.To)
+        )
+    ));
+
+    if(!createIndexResponse.IsValidResponse)
+        throw new Exception("Failed to create Elasticsearch index for todos");
 }
 
 app.Run();

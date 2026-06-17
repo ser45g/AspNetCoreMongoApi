@@ -9,7 +9,7 @@ using ZiggyCreatures.Caching.Fusion;
 
 namespace AspNetCoreMongoApi.Endpoints.WeatherForecasts
 {
-    public class GetWeatherForecastByIdEndpoint(MongoDbContext context, IFusionCache hybridCache):Endpoint<GetByIdWeatherForecastRequest, WeatherForecastResponse>
+    public class GetWeatherForecastByIdEndpoint(AppDbContext context, IFusionCache hybridCache):Endpoint<GetByIdWeatherForecastRequest, WeatherForecastResponse>
     {
         public override void Configure()
         {
