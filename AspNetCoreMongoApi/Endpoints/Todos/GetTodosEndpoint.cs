@@ -17,7 +17,7 @@ using System.Linq.Expressions;
 namespace AspNetCoreMongoApi.Endpoints.Todos
 {
 
-    public class GetTodosEndpoint(ElasticsearchClient elasticsearchClient, IOptions<PaginationOptions> paginationOptions, IKeycloakUserClient keycloakUserClient) : Endpoint<GetTodosRequest, CursorPaginationResponse<IEnumerable<TodoResponse>>>
+    public class GetTodosEndpoint(ElasticsearchClient elasticsearchClient, IOptions<PaginationOptions> paginationOptions, IKeycloakUserClient keycloakUserClient, IOptions<KeycloakClientOptions> keycloakClientOptions) : Endpoint<GetTodosRequest, CursorPaginationResponse<IEnumerable<TodoResponse>>>
     {
         public override void Configure()
         {
@@ -58,7 +58,7 @@ namespace AspNetCoreMongoApi.Endpoints.Todos
 
             var searchQuery = $"id:{userIdListString}";
 
-            var users = (await keycloakUserClient.GetUsersAsync("auth_demo", new GetUsersRequestParameters() { Search = searchQuery }, ct)).ToDictionary(u => u.Id!);
+            var users = (await keycloakUserClient.GetUsersAsync(keycloakClientOptions.Value.Realm, new GetUsersRequestParameters() { Search = searchQuery }, ct)).ToDictionary(u => u.Id!);
 
             var todoResponses = new List<TodoResponse>();
 
