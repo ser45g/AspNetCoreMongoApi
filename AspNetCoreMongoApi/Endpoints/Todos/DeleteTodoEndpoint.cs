@@ -35,7 +35,7 @@ namespace AspNetCoreMongoApi.Endpoints.Todos
             {
                 await context.SaveChangesAsync(ct);
 
-                var elasticSearchResponse = await elasticsearchClient.DeleteAsync<Todo>(req.Id, x => x.Index("todos"), cancellationToken: ct);
+                var elasticSearchResponse = await elasticsearchClient.DeleteAsync<Todo>(req.Id, x => x.Index(ElasticSearchIndecies.TodosIndex), cancellationToken: ct);
 
                 if (elasticSearchResponse.IsValidResponse)
                 {

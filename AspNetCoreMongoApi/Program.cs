@@ -1,6 +1,7 @@
 using AspNetCoreMongoApi.Data;
 using AspNetCoreMongoApi.Entities;
 using AspNetCoreMongoApi.Extensions;
+using AspNetCoreMongoApi.Helpers;
 using AspNetCoreMongoApi.Options;
 using Duende.AccessTokenManagement;
 using Elastic.Clients.Elasticsearch;
@@ -139,19 +140,20 @@ using (var context = scope.ServiceProvider.GetRequiredService<AppDbContext>())
 
 var elasticsearchClient = scope.ServiceProvider.GetRequiredService<ElasticsearchClient>();
 
-var elasticsearchExistsResponse = await elasticsearchClient.Indices.ExistsAsync("todos");
+var elasticsearchExistsResponse = await elasticsearchClient.Indices.ExistsAsync(ElasticSearchIndecies.TodosIndex);
 
 if (!elasticsearchExistsResponse.IsValidResponse)
-    throw new Exception("Elastic Search index \"todos\" request was unsuccessful.");
+    throw new Exception($"Elastic Search index \"{ElasticSearchIndecies.TodosIndex}\" request was unsuccessful.");
 
 if (!elasticsearchExistsResponse.Exists)
 {
-    var createIndexResponse = await elasticsearchClient.Indices.CreateAsync<Todo>("todos", c => c
+    var createIndexResponse = await elasticsearchClient.Indices.CreateAsync<Todo>(ElasticSearchIndecies.TodosIndex, c => c
         .Mappings(m => m
             .Properties(p => p
                 .Text(t=>t.Title)
                 .Text(t=> t.Description)
                 .Keyword(t=>t.Id)
+                .Text(t=>t.AuthorId)
                 .Boolean(t=>t.IsComplete)
                 .Date(t=> t.CreatedAt)
                 .Date(t=> t.UpdatedAt)

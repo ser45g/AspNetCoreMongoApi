@@ -30,7 +30,7 @@ namespace AspNetCoreMongoApi.Endpoints.Todos
 
             var query = (SearchRequestDescriptor<Todo> t) =>
             {
-                t.Indices("todos").Query(q => 
+                t.Indices(ElasticSearchIndecies.TodosIndex).Query(q => 
                     q.Bool(b => 
                        BuildSearchQuery(b, request)
                     )).Size(pageSize+1)
