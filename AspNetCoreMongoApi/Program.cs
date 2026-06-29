@@ -2,9 +2,11 @@ using AspNetCoreMongoApi.Data;
 using AspNetCoreMongoApi.Entities;
 using AspNetCoreMongoApi.Extensions;
 using AspNetCoreMongoApi.Options;
+using Duende.AccessTokenManagement;
 using Elastic.Clients.Elasticsearch;
 using FastEndpoints;
 using FluentValidation;
+using Keycloak.AuthServices.Sdk;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.StackExchangeRedis;
@@ -27,6 +29,9 @@ ArgumentNullException.ThrowIfNull(redisCacheOptions);
 var authenticationOptions = builder.Configuration.GetRequiredSection(AuthenticationOptions.ConfigurationSection).Get<AuthenticationOptions>();
 ArgumentNullException.ThrowIfNull(authenticationOptions);
 
+var keycloakClientOptions = builder.Configuration.GetRequiredSection(KeycloakClientOptions.ConfigurationSection).Get<KeycloakClientOptions>();
+ArgumentNullException.ThrowIfNull(keycloakClientOptions);
+
 var elasticSearchOptions= builder.Configuration.GetRequiredSection(ElasticSearchOptions.ConfigurationSection).Get<ElasticSearchOptions>();
 ArgumentNullException.ThrowIfNull(elasticSearchOptions);
 
@@ -38,6 +43,27 @@ builder.Services.AddDbContext<AppDbContext>((options) =>
 {
     options.UseNpgsql(dbOptions.ConnectionString);
 });
+
+builder.Services.AddClientCredentialsTokenManagement()
+    .AddClient(
+        "token-client",
+        client =>
+        {
+            client.ClientId = ClientId.Parse(keycloakClientOptions.ClientId);
+            client.ClientSecret = ClientSecret.Parse(keycloakClientOptions.Secret);
+            client.TokenEndpoint = new Uri(authenticationOptions.TokenUrl);
+        }
+    );
+builder.Services.AddKeycloakAdminHttpClient(o =>
+{
+    o.Realm = keycloakClientOptions.Realm;
+    o.SslRequired = keycloakClientOptions.RequireHttps ? "all" : "none";
+    o.AuthServerUrl = keycloakClientOptions.AuthServerUrl;
+    o.Credentials = new Keycloak.AuthServices.Common.KeycloakClientInstallationCredentials() { Secret = keycloakClientOptions.Secret };
+    o.VerifyTokenAudience = true;
+    o.Resource = keycloakClientOptions.ClientId;
+    o.TokenClockSkew = TimeSpan.Zero;
+}).AddClientCredentialsTokenHandler(ClientCredentialsClientName.Parse("token-client"));
 
 builder.Services.AddElasticSearchClient(elasticSearchOptions);
 

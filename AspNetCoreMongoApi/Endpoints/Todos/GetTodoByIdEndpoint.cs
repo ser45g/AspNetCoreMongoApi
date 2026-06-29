@@ -4,13 +4,15 @@ using AspNetCoreMongoApi.Data;
 using AspNetCoreMongoApi.Extensions.Mappers;
 using AspNetCoreMongoApi.Helpers;
 using FastEndpoints;
+using Keycloak.AuthServices.Sdk.Admin;
+using Keycloak.AuthServices.Sdk.Admin.Requests.Users;
 using Microsoft.EntityFrameworkCore;
 using ZiggyCreatures.Caching.Fusion;
 
 namespace AspNetCoreMongoApi.Endpoints.Todos
 {
    
-    public class GetTodoByIdEndpoint(AppDbContext context, IFusionCache hybridCache) : Endpoint<GetByIdTodoRequest, TodoResponse>
+    public class GetTodoByIdEndpoint(AppDbContext context, IFusionCache hybridCache, IKeycloakUserClient keycloakUserClient) : Endpoint<GetByIdTodoRequest, TodoResponse>
     {
         public override void Configure()
         {
@@ -28,7 +30,16 @@ namespace AspNetCoreMongoApi.Endpoints.Todos
                 await Send.NotFoundAsync(cancellation: ct);
                 return;
             }
-            TodoResponse response = todo.ToTodoResponse();
+            
+            var user = await keycloakUserClient.GetUserAsync("auth_demo", todo.AuthorId, true, ct);
+
+            if (user==null)
+            {
+                await Send.NotFoundAsync(cancellation: ct);
+                return;
+            }
+
+            TodoResponse response = todo.ToTodoResponse(new Entities.User(user.Id!, $"{user.FirstName} {user.LastName}", user.Email!));
 
             await Send.OkAsync(response, ct);
         }

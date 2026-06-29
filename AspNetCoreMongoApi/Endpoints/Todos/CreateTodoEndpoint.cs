@@ -5,7 +5,7 @@ using AspNetCoreMongoApi.Extensions.Mappers;
 using AspNetCoreMongoApi.Helpers;
 using Elastic.Clients.Elasticsearch;
 using FastEndpoints;
-
+using System.Security.Claims;
 
 namespace AspNetCoreMongoApi.Endpoints.Todos
 {
@@ -18,8 +18,17 @@ namespace AspNetCoreMongoApi.Endpoints.Todos
 
         public override async Task HandleAsync(CreateTodoRequest req, CancellationToken ct)
         {
-            var todo = req.ToTodo();
+            string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            string? email = User.FindFirstValue(ClaimTypes.Email);
+            string? name = User.FindFirstValue("name");
 
+            if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(name))
+            {
+                await Send.UnauthorizedAsync(ct);
+                return;
+            }
+
+            var todo = req.ToTodo(userId);
             context.Todos.Add(todo);
 
             await using var trans = await context.Database.BeginTransactionAsync(ct);
@@ -32,7 +41,7 @@ namespace AspNetCoreMongoApi.Endpoints.Todos
 
                 if (elasticSearchResponse.IsValidResponse)
                 {
-                    TodoResponse response = todo.ToTodoResponse();
+                    TodoResponse response = todo.ToTodoResponse(new Entities.User(userId, name, email));
 
                     await trans.CommitAsync(ct);
 

@@ -1,5 +1,6 @@
 ﻿using AspNetCoreMongoApi.Options;
 using AspNetCoreMongoApi.Validators.OptionsValidators;
+using FluentValidation;
 
 namespace AspNetCoreMongoApi.Extensions
 {
@@ -27,6 +28,14 @@ namespace AspNetCoreMongoApi.Extensions
             {
                 var validator = new AuthenticationOptionsValidator();
                 var validationResult = validator.Validate(authOptions);
+
+                return validationResult.IsValid;
+            });
+
+            services.AddOptions<KeycloakClientOptions>().BindConfiguration(KeycloakClientOptions.ConfigurationSection).ValidateOnStart().Validate(keycloakClientOptions =>
+            {
+                var validator = new KeycloakClientOptionsValidator();
+                var validationResult = validator.Validate(keycloakClientOptions);
 
                 return validationResult.IsValid;
             });

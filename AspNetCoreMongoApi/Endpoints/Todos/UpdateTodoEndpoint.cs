@@ -48,7 +48,7 @@ namespace AspNetCoreMongoApi.Endpoints.Todos
 
                     await hybridCache.RemoveAsync(CacheKeys.TodoById(req.Id), token: ct);
 
-                    await Send.OkAsync(todo.ToTodoResponse(), cancellation: ct);
+                    await Send.OkAsync(cancellation: ct);
                     return;
                 }
                 await trans.RollbackAsync(ct);

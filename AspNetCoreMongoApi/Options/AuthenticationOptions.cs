@@ -1,7 +1,4 @@
-﻿using Microsoft.AspNetCore.SignalR;
-using System.Net;
-
-namespace AspNetCoreMongoApi.Options
+﻿namespace AspNetCoreMongoApi.Options
 {
     public class AuthenticationOptions
     {

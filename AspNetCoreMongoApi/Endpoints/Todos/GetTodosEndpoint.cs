@@ -1,15 +1,15 @@
 ﻿using AspNetCoreMongoApi.Contracts.Common.Response;
 using AspNetCoreMongoApi.Contracts.Todos.Request;
 using AspNetCoreMongoApi.Contracts.Todos.Response;
-using AspNetCoreMongoApi.Data;
 using AspNetCoreMongoApi.Entities;
-using AspNetCoreMongoApi.Extensions;
 using AspNetCoreMongoApi.Extensions.Mappers;
 using AspNetCoreMongoApi.Helpers;
 using AspNetCoreMongoApi.Options;
 using Elastic.Clients.Elasticsearch;
 using Elastic.Clients.Elasticsearch.QueryDsl;
 using FastEndpoints;
+using Keycloak.AuthServices.Sdk.Admin;
+using Keycloak.AuthServices.Sdk.Admin.Requests.Users;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System.Linq.Expressions;
@@ -17,7 +17,7 @@ using System.Linq.Expressions;
 namespace AspNetCoreMongoApi.Endpoints.Todos
 {
 
-    public class GetTodosEndpoint(ElasticsearchClient elasticsearchClient, IOptions<PaginationOptions> paginationOptions) : Endpoint<GetTodosRequest, CursorPaginationResponse<IEnumerable<TodoResponse>>>
+    public class GetTodosEndpoint(ElasticsearchClient elasticsearchClient, IOptions<PaginationOptions> paginationOptions, IKeycloakUserClient keycloakUserClient) : Endpoint<GetTodosRequest, CursorPaginationResponse<IEnumerable<TodoResponse>>>
     {
         public override void Configure()
         {
@@ -26,10 +26,7 @@ namespace AspNetCoreMongoApi.Endpoints.Todos
 
         public override async Task HandleAsync(GetTodosRequest request, CancellationToken ct)
         {
-
             var pageSize = request.PageSize ?? paginationOptions.Value.DefaultPageSize;
-
-            //var searchTodosResponse = await elasticsearchClient.SearchAsync<Todo>(t =>BuildQuery(t.Indices("todos"), request, pageSize));
 
             var query = (SearchRequestDescriptor<Todo> t) =>
             {
@@ -56,7 +53,22 @@ namespace AspNetCoreMongoApi.Endpoints.Todos
             var todos = searchTodosResponse.Documents;
             var total = searchTodosResponse.Total;
 
-            var todoResponses = todos.Select(t => t.ToTodoResponse()).ToList();
+            var userIdList = todos.Select(t => t.AuthorId).Distinct().ToList();
+            var userIdListString = string.Join(" ", userIdList);
+
+            var searchQuery = $"id:{userIdListString}";
+
+            var users = (await keycloakUserClient.GetUsersAsync("auth_demo", new GetUsersRequestParameters() { Search = searchQuery }, ct)).ToDictionary(u => u.Id!);
+
+            var todoResponses = new List<TodoResponse>();
+
+            foreach (var todo in todos)
+            {
+                users.TryGetValue(todo.AuthorId, out var user);
+                if (user==null)
+                    continue;
+                todoResponses.Add(todo.ToTodoResponse(new User(user.Id!, $"{user.FirstName} {user.LastName}", user.Email!)));
+            }
 
             Guid? cursor = null;
 

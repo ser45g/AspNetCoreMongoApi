@@ -16,7 +16,7 @@
 
         public DateTime? To { get; set; }
 
-        //public required string AuthorId { get; set; }
+        public required string AuthorId { get; set; }
 
         public string? Description { get; set; }
     }
