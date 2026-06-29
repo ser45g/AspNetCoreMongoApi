@@ -10,7 +10,6 @@ using Elastic.Clients.Elasticsearch.QueryDsl;
 using FastEndpoints;
 using Keycloak.AuthServices.Sdk.Admin;
 using Keycloak.AuthServices.Sdk.Admin.Requests.Users;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System.Linq.Expressions;
 
@@ -67,7 +66,7 @@ namespace AspNetCoreMongoApi.Endpoints.Todos
                 users.TryGetValue(todo.AuthorId, out var user);
                 if (user==null)
                     continue;
-                todoResponses.Add(todo.ToTodoResponse(new User(user.Id!, $"{user.FirstName} {user.LastName}", user.Email!)));
+                todoResponses.Add(todo.ToTodoResponse(new Entities.User(user.Id!, user.FirstName!, user.LastName!, user.Email!)));
             }
 
             Guid? cursor = null;

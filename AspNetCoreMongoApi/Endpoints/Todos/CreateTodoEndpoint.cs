@@ -20,9 +20,10 @@ namespace AspNetCoreMongoApi.Endpoints.Todos
         {
             string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             string? email = User.FindFirstValue(ClaimTypes.Email);
-            string? name = User.FindFirstValue("name");
+            string? firstName = User.FindFirstValue("given_name");
+            string? lastName = User.FindFirstValue("family_name");
 
-            if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(name))
+            if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(firstName) || string.IsNullOrWhiteSpace(lastName))
             {
                 await Send.UnauthorizedAsync(ct);
                 return;
@@ -41,7 +42,7 @@ namespace AspNetCoreMongoApi.Endpoints.Todos
 
                 if (elasticSearchResponse.IsValidResponse)
                 {
-                    TodoResponse response = todo.ToTodoResponse(new Entities.User(userId, name, email));
+                    TodoResponse response = todo.ToTodoResponse(new Entities.User(userId, firstName, lastName, email));
 
                     await trans.CommitAsync(ct);
 

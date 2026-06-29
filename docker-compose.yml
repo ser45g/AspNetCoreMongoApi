@@ -14,9 +14,9 @@ services:
       
        - "AuthenticationOptions__MetadataAddress=http://keycloak:8080/realms/auth_demo/.well-known/openid-configuration"
        - "AuthenticationOptions__ValidIssuer=http://localhost:8080/realms/auth_demo"
-       - "AuthenticationOptions__AuthorizationUrl=http://keycloak:8080/realms/auth_demo/protocol/openid-connect/auth"
-       - "AuthenticationOptions__TokenUrl=http://keycloak:8080/realms/auth_demo/protocol/openid-connect/token"
-       - "AuthenticationOptions__RefreshUrl=http://keycloak:8080/realms/auth_demo/protocol/openid-connect/token"
+       - "AuthenticationOptions__AuthorizationUrl=http://localhost:8080/realms/auth_demo/protocol/openid-connect/auth"
+       - "AuthenticationOptions__TokenUrl=http://localhost:8080/realms/auth_demo/protocol/openid-connect/token"
+       - "AuthenticationOptions__RefreshUrl=http://localhost:8080/realms/auth_demo/protocol/openid-connect/token"
        - "AuthenticationOptions__Audience=${AUTHENTICATION_AUDIENCE}"
        - "AuthenticationOptions__ClientId=${AUTHENTICATION_CLIENTID}"
        - "AuthenticationOptions__RequireHttps=false"
@@ -24,7 +24,7 @@ services:
        - "AuthenticationOptions__Scopes__profile=profile"
        - "AuthenticationOptions__Scopes__openid=openid"
 
-       - "KeycloakClientOptions__Secret=BzDEMWJue4Ti6atk0lns2Zc5OzOCTwhi"
+       - "KeycloakClientOptions__Secret=0irV27QfnSdCUPQvhE2dH4JgMaxkbueB"
        - "KeycloakClientOptions__Realm=auth_demo"
        - "KeycloakClientOptions__ClientId=service-client"
        - "KeycloakClientOptions__AuthServerUrl=http://keycloak:8080/"

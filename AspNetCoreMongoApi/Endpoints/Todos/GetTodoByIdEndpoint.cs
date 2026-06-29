@@ -6,7 +6,6 @@ using AspNetCoreMongoApi.Helpers;
 using AspNetCoreMongoApi.Options;
 using FastEndpoints;
 using Keycloak.AuthServices.Sdk.Admin;
-using Keycloak.AuthServices.Sdk.Admin.Requests.Users;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using ZiggyCreatures.Caching.Fusion;
@@ -41,7 +40,7 @@ namespace AspNetCoreMongoApi.Endpoints.Todos
                 return;
             }
 
-            TodoResponse response = todo.ToTodoResponse(new Entities.User(user.Id!, $"{user.FirstName} {user.LastName}", user.Email!));
+            TodoResponse response = todo.ToTodoResponse(new Entities.User(user.Id!, user.FirstName!, user.LastName!, user.Email!));
 
             await Send.OkAsync(response, ct);
         }

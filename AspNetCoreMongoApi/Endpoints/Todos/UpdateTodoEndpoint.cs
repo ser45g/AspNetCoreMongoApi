@@ -1,7 +1,6 @@
 ﻿using AspNetCoreMongoApi.Contracts.Todos.Request;
 using AspNetCoreMongoApi.Contracts.Todos.Response;
 using AspNetCoreMongoApi.Data;
-using AspNetCoreMongoApi.Extensions.Mappers;
 using AspNetCoreMongoApi.Helpers;
 using Elastic.Clients.Elasticsearch;
 using FastEndpoints;
