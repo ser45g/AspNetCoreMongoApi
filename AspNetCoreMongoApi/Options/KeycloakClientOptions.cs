@@ -11,5 +11,7 @@ namespace AspNetCoreMongoApi.Options
         public required string Realm {  get; init; }
         public bool RequireHttps { get; init; } = true;
         public required string Secret { get; init; }
+        public required string TokenUrl { get; init; }
+
     }
 }

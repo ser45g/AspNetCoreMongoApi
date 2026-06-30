@@ -20,8 +20,8 @@ namespace AspNetCoreMongoApi.Endpoints.Todos
         {
             string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             string? email = User.FindFirstValue(ClaimTypes.Email);
-            string? firstName = User.FindFirstValue("given_name");
-            string? lastName = User.FindFirstValue("family_name");
+            string? firstName = User.FindFirstValue(ClaimTypes.GivenName);
+            string? lastName = User.FindFirstValue(ClaimTypes.Surname);
 
             if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(firstName) || string.IsNullOrWhiteSpace(lastName))
             {

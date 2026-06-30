@@ -10,7 +10,7 @@ services:
        - CorsOptions__AllowedOrigins__0=http://localhost:5173
        - CorsOptions__AllowedOrigins__1=http://localhost:5174
 
-       - "DbOptions__ConnectionString=User Id=postgres;Password=pwd;Server=db;Port=5432;Database=db"
+       - "DbOptions__ConnectionString=User Id=${DB_DB_USERNAME};Password=${DB_DB_PASSWORD};Server=db;Port=5432;Database=${DB_DB}"
       
        - "AuthenticationOptions__MetadataAddress=http://keycloak:8080/realms/auth_demo/.well-known/openid-configuration"
        - "AuthenticationOptions__ValidIssuer=http://localhost:8080/realms/auth_demo"
@@ -24,10 +24,11 @@ services:
        - "AuthenticationOptions__Scopes__profile=profile"
        - "AuthenticationOptions__Scopes__openid=openid"
 
-       - "KeycloakClientOptions__Secret=0irV27QfnSdCUPQvhE2dH4JgMaxkbueB"
+       - "KeycloakClientOptions__Secret=${KEYCLOAK_CLIENT_SECRET}"
        - "KeycloakClientOptions__Realm=auth_demo"
-       - "KeycloakClientOptions__ClientId=service-client"
+       - "KeycloakClientOptions__ClientId=${KEYCLOAK_CLIENT_CLIENTID}"
        - "KeycloakClientOptions__AuthServerUrl=http://keycloak:8080/"
+       - "KeycloakClientOptions__TokenUrl=http://keycloak:8080/realms/auth_demo/protocol/openid-connect/token"
 
        - "SeqOptions__Url=seq-dashboard:5341"
        - "OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf"
@@ -37,8 +38,8 @@ services:
        - "RedisOptions__Password=${REDIS_PASSWORD}"
 
        - "ElasticSearchOptions__Url=http://elasticsearch:9200"
-       - "ElasticSearchOptions__LocalUsername=elasticsearch"
-       - "ElasticSearchOptions__LocalPassword=elasticsearch"
+       - "ElasticSearchOptions__LocalUsername=${ELASTICSEARCH_USERNAME}"
+       - "ElasticSearchOptions__LocalPassword=${ELASTICSEARCH_PASSWORD}"
        - "ElasticSearchOptions__IsSslUsed=false"
   
   keycloak:
@@ -74,9 +75,9 @@ services:
     container_name: db
     image: postgres:19beta1
     environment:
-      POSTGRES-DB: db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: pwd
+      POSTGRES-DB: ${DB_DB}
+      POSTGRES_USER: ${DB_DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_DB_PASSWORD}
     volumes:
       - postgres-db-data:/var/lib/postgresql
 
@@ -114,7 +115,10 @@ services:
     container_name: elasticsearch
     environment:
       - discovery.type=single-node
-      - xpack.security.enabled=false  # Disable auth for local dev
+      - ELASTIC_PASSWORD=${ELASTICSEARCH_PASSWORD}
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=false
+      - xpack.license.self_generated.type=basic
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     volumes:
       - elasticsearch-data:/usr/share/elasticsearch/data
@@ -125,8 +129,10 @@ services:
     depends_on:
       - elasticsearch
     environment:
-      ELASTICSEARCH_URL: elasticsearch:9200
-
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=${KIBANA_USERNAME}
+      - ELASTICSEARCH_PASSWORD=${KIBANA_PASSWORD}
+      - XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY=${KIBANA_ENCRYPTION_KEY}
 volumes:
   postgres-keycloak-data:
   mongodb1-data:

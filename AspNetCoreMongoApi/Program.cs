@@ -43,7 +43,7 @@ builder.Services.AddDbContext<AppDbContext>((options) =>
     options.UseNpgsql(dbOptions.ConnectionString);
 });
 
-builder.Services.AddKeycloakClientServices(authenticationOptions, keycloakClientOptions);
+builder.Services.AddKeycloakClientServices(keycloakClientOptions);
 
 builder.Services.AddElasticSearchClient(elasticSearchOptions);
 

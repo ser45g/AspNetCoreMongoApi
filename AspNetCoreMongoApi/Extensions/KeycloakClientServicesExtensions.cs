@@ -6,14 +6,14 @@ namespace AspNetCoreMongoApi.Extensions
 {
     public static class KeycloakClientServicesExtensions
     {
-        public static IServiceCollection AddKeycloakClientServices(this IServiceCollection services, AuthenticationOptions authenticationOptions, KeycloakClientOptions keycloakClientOptions, string tokenClientName = "token-client") {
+        public static IServiceCollection AddKeycloakClientServices(this IServiceCollection services,KeycloakClientOptions keycloakClientOptions, string tokenClientName = "token-client") {
 
             services.AddClientCredentialsTokenManagement()
                 .AddClient(tokenClientName, client =>
                 {
                     client.ClientId = ClientId.Parse(keycloakClientOptions.ClientId);
                     client.ClientSecret = ClientSecret.Parse(keycloakClientOptions.Secret);
-                    client.TokenEndpoint = new Uri(authenticationOptions.TokenUrl);
+                    client.TokenEndpoint = new Uri(keycloakClientOptions.TokenUrl);
                 }
                 );
             services.AddKeycloakAdminHttpClient(o =>

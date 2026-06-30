@@ -10,6 +10,7 @@ namespace AspNetCoreMongoApi.Validators.OptionsValidators
             RuleFor(a => a.Realm).NotEmpty();
             RuleFor(a => a.AuthServerUrl).NotEmpty();
             RuleFor(a => a.Secret).NotEmpty();
+            RuleFor(a => a.TokenUrl).NotEmpty();
 
         }
     }
