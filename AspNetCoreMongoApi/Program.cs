@@ -10,6 +10,10 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.StackExchangeRedis;
 using Microsoft.IdentityModel.Tokens;
+using OpenTelemetry.Logs;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using ZiggyCreatures.Caching.Fusion;
 using ZiggyCreatures.Caching.Fusion.Backplane.StackExchangeRedis;
 using ZiggyCreatures.Caching.Fusion.Serialization.SystemTextJson;
@@ -18,9 +22,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 var dbOptions = builder.Configuration.GetRequiredSection(DbOptions.ConfigurationSection).Get<DbOptions>();
 ArgumentNullException.ThrowIfNull(dbOptions);
-
-var seqOptions = builder.Configuration.GetRequiredSection(SeqOptions.ConfigurationSection).Get<SeqOptions>();
-ArgumentNullException.ThrowIfNull(seqOptions);
 
 var redisCacheOptions = builder.Configuration.GetRequiredSection(RedisOptions.ConfigurationSection).Get<RedisOptions>();
 ArgumentNullException.ThrowIfNull(redisCacheOptions);
@@ -33,8 +34,6 @@ ArgumentNullException.ThrowIfNull(keycloakClientOptions);
 
 var elasticSearchOptions= builder.Configuration.GetRequiredSection(ElasticSearchOptions.ConfigurationSection).Get<ElasticSearchOptions>();
 ArgumentNullException.ThrowIfNull(elasticSearchOptions);
-
-builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"] = seqOptions.OtlpEndpoint;
 
 builder.Services.AddOpenApiWithOIDC(authenticationOptions);
 
@@ -66,6 +65,25 @@ builder.Services.AddCors(options =>
         policy.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod().AllowCredentials();
     });
 });
+
+builder.Services.AddLogging();
+
+builder.Services.AddOpenTelemetry().ConfigureResource(resource =>
+{
+    resource.AddService("AspNetCoreMongoApi");
+}).WithMetrics(metrics =>
+{
+    metrics.AddAspNetCoreInstrumentation().AddHttpClientInstrumentation();
+
+    metrics.AddOtlpExporter();
+}).WithTracing(tracing =>
+{
+    tracing.AddAspNetCoreInstrumentation().AddHttpClientInstrumentation().AddEntityFrameworkCoreInstrumentation();
+
+    tracing.AddOtlpExporter();
+});
+
+builder.Logging.AddOpenTelemetry(logging => logging.AddOtlpExporter());
 
 builder.Services.AddValidatedApplicationOptions();
 

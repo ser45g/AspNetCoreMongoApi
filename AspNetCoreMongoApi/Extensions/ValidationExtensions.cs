@@ -16,14 +16,6 @@ namespace AspNetCoreMongoApi.Extensions
                 return validationResult.IsValid;
             });
 
-            services.AddOptions<SeqOptions>().BindConfiguration(SeqOptions.ConfigurationSection).ValidateOnStart().Validate(seqOptions =>
-            {
-                var validator = new SeqOptionsValidator();
-                var validationResult = validator.Validate(seqOptions);
-
-                return validationResult.IsValid;
-            });
-
             services.AddOptions<AuthenticationOptions>().BindConfiguration(AuthenticationOptions.ConfigurationSection).ValidateOnStart().Validate(authOptions =>
             {
                 var validator = new AuthenticationOptionsValidator();
