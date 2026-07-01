@@ -55,7 +55,7 @@ builder.Services.AddFusionCache().WithDefaultEntryOptions(o =>
 .WithBackplane(new RedisBackplane(new RedisBackplaneOptions() {
     Configuration = redisCacheOptions.Configuration,
 }));
-
+builder.Services.AddHealthChecks();
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
@@ -122,6 +122,8 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseCors();
+
+app.MapHealthChecks("/health");
 
 app.MapFastEndpoints(c =>
 {
