@@ -102,7 +102,11 @@ services:
       POSTGRES_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
     volumes:
       - postgres-keycloak-data:/var/lib/postgresql
-
+  papercut:
+    image: changemakerstudiosus/papercut-smtp:7.7.3-alpha.7
+    container_name: papercut_smtp
+    ports:
+      - "8093:8080"
   db:
     container_name: db
     image: postgres:19beta1
