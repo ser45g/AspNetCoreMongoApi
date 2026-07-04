@@ -9,7 +9,7 @@ using ZiggyCreatures.Caching.Fusion;
 
 namespace AspNetCoreMongoApi.Consumers.Keycloak
 {
-    public class UserDeletedConsumer(AppDbContext dbContext, IFusionCache hybridCache, ElasticsearchClient elasticsearchClient) : IConsumer<KeycloakAdminEventMessage>
+    public class UserDeletedConsumer(AppDbContext dbContext, IFusionCache hybridCache, ElasticsearchClient elasticsearchClient, IPublishEndpoint _publishEndpoint) : IConsumer<KeycloakAdminEventMessage>
     {       
         public async Task Consume(ConsumeContext<KeycloakAdminEventMessage> context)
         {

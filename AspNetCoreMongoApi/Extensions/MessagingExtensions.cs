@@ -34,7 +34,7 @@ namespace AspNetCoreMongoApi.Extensions
                         e.Bind("keycloak-events", b =>
                         {
                             //b.RoutingKey = "KK.EVENT.*.auth_demo.#"; // this is to handle all keycloak realm events
-                            b.RoutingKey = $"KK.EVENT.ADMIN.{keycloakRealmName}.SUCCESS.USER.DELETE";
+                            b.RoutingKey = $"KK.EVENT.*.{keycloakRealmName}.SUCCESS.USER.DELETE";
                             b.ExchangeType = "topic";
                         });
                         e.ConfigureConsumeTopology = false;
@@ -48,7 +48,7 @@ namespace AspNetCoreMongoApi.Extensions
                         e.Bind("keycloak-events", b =>
                         {
                             //b.RoutingKey = "KK.EVENT.*.auth_demo.#"; // this is to handle all keycloak realm events
-                            b.RoutingKey = $"KK.EVENT.ADMIN.{keycloakRealmName}.SUCCESS.USER.CREATE";
+                            b.RoutingKey = $"KK.EVENT.*.{keycloakRealmName}.SUCCESS.USER.CREATE";
                             b.ExchangeType = "topic";
                         });
                         e.ConfigureConsumeTopology = false;

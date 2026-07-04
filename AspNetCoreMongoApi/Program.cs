@@ -4,6 +4,7 @@ using AspNetCoreMongoApi.Entities;
 using AspNetCoreMongoApi.Extensions;
 using AspNetCoreMongoApi.Helpers;
 using AspNetCoreMongoApi.Options;
+using AspNetCoreMongoApi.Services;
 using Elastic.Clients.Elasticsearch;
 using FastEndpoints;
 using FluentValidation;
@@ -106,6 +107,8 @@ builder.Services.AddAuthorization(o =>
 {
     o.AddPolicy("Admin", policy => policy.RequireRole("admin"));
 });
+
+builder.Services.AddSingleton<IEmailService, EmailService>();
 
 builder.Services.AddProblemDetails();
 

@@ -61,6 +61,14 @@ services:
        - "RabbitMqOptions__Username=${RABBITMQ_USER}"
        - "RabbitMqOptions__Password=${RABBITMQ_PASSWORD}"
 
+       - "MailOptions__DisplayName=My app"
+       - "MailOptions__From=sergey1pes@gmail.com"
+       - MailOptions__Host=papercut
+       - "MailOptions__Port=2525"
+       - "MailOptions__UserName=user1"
+       - "MailOptions__Password=user1"
+       - MailOptions__IsAuthenticated=false
+
   keycloak:
     image: quay.io/keycloak/keycloak:26.5.2
     container_name: keycloak
