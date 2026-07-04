@@ -1,6 +1,8 @@
-﻿using AspNetCoreMongoApi.Contracts.Todos.Request;
+﻿using AspNetCoreMongoApi.Contracts.Common.Response;
+using AspNetCoreMongoApi.Contracts.Todos.Request;
 using AspNetCoreMongoApi.Contracts.Todos.Response;
 using AspNetCoreMongoApi.Data;
+using AspNetCoreMongoApi.Entities;
 using AspNetCoreMongoApi.Extensions.Mappers;
 using AspNetCoreMongoApi.Helpers;
 using AspNetCoreMongoApi.Options;
@@ -22,9 +24,17 @@ namespace AspNetCoreMongoApi.Endpoints.Todos
 
         public override async Task HandleAsync(GetByIdTodoRequest req, CancellationToken ct)
         {
-            var todo = await hybridCache.GetOrSetAsync(CacheKeys.TodoById(req.Id), async cancellationToken => {
-                return await context.Todos.FirstOrDefaultAsync(w => w.Id == req.Id, cancellationToken: cancellationToken);
-            }, token: ct);
+
+            var todo = await hybridCache.GetOrDefaultAsync<Todo>(CacheKeys.TodoById(req.Id), token: ct);
+
+            if(todo == null)
+            {
+                todo = await context.Todos.FirstOrDefaultAsync(w => w.Id == req.Id, cancellationToken: ct);
+                if (todo != null)
+                {
+                    await hybridCache.SetAsync(CacheKeys.TodoById(req.Id), todo, tags: [CacheTags.TodoAuthorTag(todo.AuthorId)], token: ct);
+                }
+            }
 
             if (todo == null)
             {
@@ -40,7 +50,7 @@ namespace AspNetCoreMongoApi.Endpoints.Todos
                 return;
             }
 
-            TodoResponse response = todo.ToTodoResponse(new Entities.User(user.Id!, user.FirstName!, user.LastName!, user.Email!));
+            TodoResponse response = todo.ToTodoResponse(new UserResponse(user.Id!, user.FirstName!, user.LastName!, user.Email!));
 
             await Send.OkAsync(response, ct);
         }

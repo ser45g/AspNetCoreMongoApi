@@ -1,4 +1,5 @@
-﻿using AspNetCoreMongoApi.Contracts.Todos.Request;
+﻿using AspNetCoreMongoApi.Contracts.Common.Response;
+using AspNetCoreMongoApi.Contracts.Todos.Request;
 using AspNetCoreMongoApi.Contracts.Todos.Response;
 using AspNetCoreMongoApi.Data;
 using AspNetCoreMongoApi.Extensions.Mappers;
@@ -42,7 +43,7 @@ namespace AspNetCoreMongoApi.Endpoints.Todos
 
                 if (elasticSearchResponse.IsValidResponse)
                 {
-                    TodoResponse response = todo.ToTodoResponse(new Entities.User(userId, firstName, lastName, email));
+                    TodoResponse response = todo.ToTodoResponse(new UserResponse(userId, firstName, lastName, email));
 
                     await trans.CommitAsync(ct);
 

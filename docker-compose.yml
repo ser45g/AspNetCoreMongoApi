@@ -56,7 +56,11 @@ services:
        - "ElasticSearchOptions__LocalUsername=${ELASTICSEARCH_USERNAME}"
        - "ElasticSearchOptions__LocalPassword=${ELASTICSEARCH_PASSWORD}"
        - "ElasticSearchOptions__IsSslUsed=false"
-  
+
+       - "RabbitMqOptions__Url=amqp://rabbitmq:5672"
+       - "RabbitMqOptions__Username=${RABBITMQ_USER}"
+       - "RabbitMqOptions__Password=${RABBITMQ_PASSWORD}"
+
   keycloak:
     image: quay.io/keycloak/keycloak:26.5.2
     container_name: keycloak
@@ -71,7 +75,8 @@ services:
       retries: 5
       start_period: 30s
     volumes:
-    - ./keycloak-imports:/opt/keycloak/data/import:ro
+    - ./keycloak/realm-import:/opt/keycloak/data/import:ro
+    - ./keycloak/rabbitmq-integration:/opt/keycloak/providers
     environment:
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
@@ -84,6 +89,19 @@ services:
       KEYCLOAK_IMPORT: /opt/jboss/keycloak/imports/realm-export.json -Dkeycloak.profile.feature.upload_scripts=enabled
 
       KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET}
+
+      KK_TO_RMQ_URL: rabbitmq
+      KK_TO_RMQ_PORT: 5672
+      KK_TO_RMQ_VHOST: /
+      KK_TO_RMQ_EXCHANGE: keycloak-events
+      KK_TO_RMQ_USERNAME: ${RABBITMQ_USER}
+      KK_TO_RMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      KK_TO_RMQ_USE_TLS: false
+      
+      # KK_TO_RMQ_KEY_STORE - default: empty
+      # KK_TO_RMQ_KEY_STORE_PASS - default: empty
+      # KK_TO_RMQ_TRUST_STORE - default: empty
+      # KK_TO_RMQ_TRUST_STORE_PASS - default: empty
     ports:
     - 8080:8080
 
@@ -107,6 +125,25 @@ services:
     container_name: papercut_smtp
     ports:
       - "8093:8080"
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+      RABBITMQ_DEFAULT_VHOST: /
+    ports:
+     # - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
   db:
     container_name: db
     image: postgres:19beta1
@@ -212,4 +249,5 @@ volumes:
   redis-insight:
   elasticsearch-data:
   postgres-db-data:
+  rabbitmq_data:
    

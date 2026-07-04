@@ -66,7 +66,7 @@ namespace AspNetCoreMongoApi.Endpoints.Todos
                 users.TryGetValue(todo.AuthorId, out var user);
                 if (user==null)
                     continue;
-                todoResponses.Add(todo.ToTodoResponse(new Entities.User(user.Id!, user.FirstName!, user.LastName!, user.Email!)));
+                todoResponses.Add(todo.ToTodoResponse(new UserResponse(user.Id!, user.FirstName!, user.LastName!, user.Email!)));
             }
 
             Guid? cursor = null;

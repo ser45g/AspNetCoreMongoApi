@@ -16,7 +16,8 @@
     <None Include="docker-compose.yml" />
     <None Include=".dockerignore" />
     <None Include="k6-test.js" />
-    <None Include="keycloak-imports\realm-export.json" />
+    <None Include="keycloak\rabbitmq-integration\keycloak-to-rabbit-3.0.5.jar" />
+    <None Include="keycloak\realm-import\realm-export.json" />
     <None Include="kubernetes\gateway\backend-tls-policy.yaml" />
     <None Include="kubernetes\gateway\gateway.yaml" />
     <None Include="kubernetes\gateway\http-route.yaml" />

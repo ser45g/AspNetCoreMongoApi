@@ -1,3 +1,4 @@
+using AspNetCoreMongoApi.Consumers;
 using AspNetCoreMongoApi.Data;
 using AspNetCoreMongoApi.Entities;
 using AspNetCoreMongoApi.Extensions;
@@ -6,6 +7,7 @@ using AspNetCoreMongoApi.Options;
 using Elastic.Clients.Elasticsearch;
 using FastEndpoints;
 using FluentValidation;
+using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.StackExchangeRedis;
@@ -34,6 +36,9 @@ ArgumentNullException.ThrowIfNull(keycloakClientOptions);
 
 var elasticSearchOptions= builder.Configuration.GetRequiredSection(ElasticSearchOptions.ConfigurationSection).Get<ElasticSearchOptions>();
 ArgumentNullException.ThrowIfNull(elasticSearchOptions);
+
+var rabbitMqOptions= builder.Configuration.GetRequiredSection(RabbitMqOptions.ConfigurationSection).Get<RabbitMqOptions>();
+ArgumentNullException.ThrowIfNull(rabbitMqOptions);
 
 builder.Services.AddOpenApiWithOIDC(authenticationOptions);
 
@@ -65,6 +70,8 @@ builder.Services.AddCors(options =>
         policy.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod().AllowCredentials();
     });
 });
+
+builder.Services.AddAppMessaging(rabbitMqOptions, keycloakClientOptions.Realm);
 
 builder.Services.AddLogging();
 

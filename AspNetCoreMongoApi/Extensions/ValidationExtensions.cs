@@ -55,6 +55,15 @@ namespace AspNetCoreMongoApi.Extensions
 
             services.AddOptions<CorsOptions>().BindConfiguration(CorsOptions.ConfigurationSection);
 
+            services.AddOptions<
+                RabbitMqOptions>().BindConfiguration(RabbitMqOptions.ConfigurationSection).ValidateOnStart().Validate(rabbitMqOptions =>
+                {
+                    var validator = new RabbitMqOptionsValidator();
+                    var validationResult = validator.Validate(rabbitMqOptions);
+
+                    return validationResult.IsValid;
+                });
+
             return services;
         }
     }

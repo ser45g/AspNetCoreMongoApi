@@ -21,6 +21,7 @@
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
     <PackageReference Include="Keycloak.AuthServices.Authentication" Version="3.0.0" />
     <PackageReference Include="Keycloak.AuthServices.Sdk" Version="3.0.0" />
+    <PackageReference Include="MassTransit.RabbitMQ" Version="9.1.2" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.9" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.9" />
     <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="10.0.9" />
@@ -47,6 +48,7 @@
 
   <ItemGroup>
     <Folder Include="Contracts\Common\Request\" />
+    <Folder Include="Services\" />
   </ItemGroup>
 
 </Project>
