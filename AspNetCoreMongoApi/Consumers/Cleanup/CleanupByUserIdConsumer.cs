@@ -1,5 +1,4 @@
-﻿using AspNetCoreMongoApi.Consumers.Keycloak.Events;
-using AspNetCoreMongoApi.Data;
+﻿using AspNetCoreMongoApi.Data;
 using AspNetCoreMongoApi.Entities;
 using AspNetCoreMongoApi.Helpers;
 using Elastic.Clients.Elasticsearch;
@@ -7,31 +6,30 @@ using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using ZiggyCreatures.Caching.Fusion;
 
-namespace AspNetCoreMongoApi.Consumers.Keycloak
+namespace AspNetCoreMongoApi.Consumers.Cleanup
 {
-    public class UserDeletedConsumer(AppDbContext dbContext, IFusionCache hybridCache, ElasticsearchClient elasticsearchClient, IPublishEndpoint _publishEndpoint) : IConsumer<KeycloakAdminEventMessage>
-    {       
-        public async Task Consume(ConsumeContext<KeycloakAdminEventMessage> context)
+    public class CleanupByUserIdConsumer(AppDbContext dbContext, IFusionCache hybridCache, ElasticsearchClient elasticsearchClient) : IConsumer<CleanupByUserIdEvent>
+    {
+        public async Task Consume(ConsumeContext<CleanupByUserIdEvent> context)
         {
-            var message = context.Message;
+            var userId = context.Message.UserId;
 
-            var userId = message.ResourceId;
-
+            if (userId == null) {
+                return;
+            }
             var ct = context.CancellationToken;
 
             var todos = await dbContext.Todos.Where(t => t.AuthorId == userId).ToListAsync(ct);
 
-            if (todos==null || todos.Count==0)
+            if (todos == null || todos.Count == 0)
             {
                 return;
             }
-
             var todosIds = todos.Select(t => FieldValue.String(t.Id.ToString())).ToList();
 
             dbContext.Todos.RemoveRange(todos);
 
-            using var trans = await dbContext.Database.BeginTransactionAsync(ct); //can't use <await using>, basically, that early return in the successful scenario will not work correctly, the last throw still be executed. Which is weird. I tried other code in that line (maybe there's something special about throwing in this case I thought) but no difference, it still gets executed. So, idk, it's weird
-
+            using var trans = await dbContext.Database.BeginTransactionAsync(ct);
             try
             {
                 await dbContext.SaveChangesAsync();
@@ -40,7 +38,7 @@ namespace AspNetCoreMongoApi.Consumers.Keycloak
                     .Query(q => q
                         .Terms(t => t
                             .Field(f => f.Id)
-                            .Terms(f=>f.Value(todosIds))
+                            .Terms(f => f.Value(todosIds))
                     )
                 )
                 .Refresh(true), ct);
@@ -49,7 +47,7 @@ namespace AspNetCoreMongoApi.Consumers.Keycloak
                 {
                     await trans.CommitAsync(ct);
 
-                    await hybridCache.RemoveByTagAsync(CacheTags.TodoAuthorTag(userId), token:ct);
+                    await hybridCache.RemoveByTagAsync(CacheTags.TodoAuthorTag(userId), token: ct);
 
                     return;
                 }

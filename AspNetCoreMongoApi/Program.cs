@@ -4,7 +4,9 @@ using AspNetCoreMongoApi.Entities;
 using AspNetCoreMongoApi.Extensions;
 using AspNetCoreMongoApi.Helpers;
 using AspNetCoreMongoApi.Options;
+using AspNetCoreMongoApi.Outbox;
 using AspNetCoreMongoApi.Services;
+using EFCore.PostgresExtensions.Extensions;
 using Elastic.Clients.Elasticsearch;
 using FastEndpoints;
 using FluentValidation;
@@ -45,8 +47,11 @@ builder.Services.AddOpenApiWithOIDC(authenticationOptions);
 
 builder.Services.AddDbContext<AppDbContext>((options) =>
 {
-    options.UseNpgsql(dbOptions.ConnectionString);
+    options.UseNpgsql(dbOptions.ConnectionString).UseQueryLocks(); ;
 });
+
+builder.Services.AddHostedService<OutboxBackgroundService>();
+builder.Services.AddScoped<OutboxProcessor>();
 
 builder.Services.AddKeycloakClientServices(keycloakClientOptions);
 
@@ -72,7 +77,7 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddAppMessaging(rabbitMqOptions, keycloakClientOptions.Realm);
+builder.Services.AddAppMessaging(rabbitMqOptions, keycloakClientOptions.Realm, authenticationOptions.ClientId, builder.Environment.IsDevelopment());
 
 builder.Services.AddLogging();
 
